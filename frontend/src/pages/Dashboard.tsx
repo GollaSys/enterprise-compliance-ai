@@ -12,6 +12,8 @@ import {
   ListItem,
   ListItemText,
   Avatar,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -19,7 +21,7 @@ import {
   MoreVert,
   CheckCircle,
   Warning,
-  Error,
+  Error as ErrorIcon,
   Schedule,
   ArrowUpward,
   ArrowDownward,
@@ -36,83 +38,110 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import { dashboardAPI } from '../services/api';
 
-const Dashboard: React.FC = () => {
-  const complianceData = [
-    { month: 'Jan', score: 78 },
-    { month: 'Feb', score: 82 },
-    { month: 'Mar', score: 85 },
-    { month: 'Apr', score: 87 },
-    { month: 'May', score: 89 },
-    { month: 'Jun', score: 92 },
-  ];
+const RISK_COLORS: Record<string, string> = {
+  critical: '#f44336',
+  high: '#ff9800',
+  medium: '#ffc107',
+  low: '#4caf50',
+};
 
-  const riskDistribution = [
-    { name: 'Critical', value: 3, color: '#f44336' },
-    { name: 'High', value: 8, color: '#ff9800' },
-    { name: 'Medium', value: 15, color: '#ffc107' },
-    { name: 'Low', value: 24, color: '#4caf50' },
-  ];
+const SEVERITY_CONFIG: Record<string, { icon: React.ReactNode; color: string }> = {
+  success: { icon: <CheckCircle sx={{ fontSize: 20 }} />, color: '#4caf50' },
+  warning: { icon: <Warning sx={{ fontSize: 20 }} />, color: '#ff9800' },
+  error: { icon: <ErrorIcon sx={{ fontSize: 20 }} />, color: '#f44336' },
+  info: { icon: <Schedule sx={{ fontSize: 20 }} />, color: '#2196f3' },
+};
 
-  const regulatoryStatus = [
-    { name: 'GDPR', compliance: 92, target: 95 },
-    { name: 'SOX', compliance: 88, target: 90 },
-    { name: 'FINRA', compliance: 94, target: 95 },
-    { name: 'SEC', compliance: 85, target: 90 },
-  ];
-
-  const StatCard = ({ title, value, change, trend, color }: any) => (
-    <Card sx={{ height: '100%', position: 'relative', overflow: 'visible' }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Box>
-            <Typography color="text.secondary" variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-              {title}
-            </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              {value}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {trend === 'up' ? (
-                <ArrowUpward sx={{ fontSize: 16, color: 'success.main' }} />
-              ) : (
-                <ArrowDownward sx={{ fontSize: 16, color: 'error.main' }} />
-              )}
-              <Typography
-                variant="body2"
-                sx={{
-                  color: trend === 'up' ? 'success.main' : 'error.main',
-                  fontWeight: 600,
-                }}
-              >
-                {change}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                vs last month
-              </Typography>
-            </Box>
-          </Box>
-          <Box
-            sx={{
-              width: 60,
-              height: 60,
-              borderRadius: 3,
-              background: `linear-gradient(135deg, ${color}20 0%, ${color}40 100%)`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+const StatCard = ({ title, value, change, trend, color }: any) => (
+  <Card sx={{ height: '100%', position: 'relative', overflow: 'visible' }}>
+    <CardContent>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Typography color="text.secondary" variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+            {title}
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+            {value}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {trend === 'up' ? (
-              <TrendingUp sx={{ color: color, fontSize: 28 }} />
+              <ArrowUpward sx={{ fontSize: 16, color: 'success.main' }} />
             ) : (
-              <TrendingDown sx={{ color: color, fontSize: 28 }} />
+              <ArrowDownward sx={{ fontSize: 16, color: 'error.main' }} />
             )}
+            <Typography
+              variant="body2"
+              sx={{ color: trend === 'up' ? 'success.main' : 'error.main', fontWeight: 600 }}
+            >
+              {change}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              vs last month
+            </Typography>
           </Box>
         </Box>
-      </CardContent>
-    </Card>
-  );
+        <Box
+          sx={{
+            width: 60,
+            height: 60,
+            borderRadius: 3,
+            background: `linear-gradient(135deg, ${color}20 0%, ${color}40 100%)`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {trend === 'up' ? (
+            <TrendingUp sx={{ color: color, fontSize: 28 }} />
+          ) : (
+            <TrendingDown sx={{ color: color, fontSize: 28 }} />
+          )}
+        </Box>
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+const Dashboard: React.FC = () => {
+  const { data: metricsData, isLoading: metricsLoading, error: metricsError } = useQuery({
+    queryKey: ['dashboard-metrics'],
+    queryFn: () => dashboardAPI.getMetrics().then(res => res.data),
+  });
+
+  const { data: activitiesData, isLoading: activitiesLoading } = useQuery({
+    queryKey: ['dashboard-activities'],
+    queryFn: () => dashboardAPI.getActivities().then(res => res.data),
+  });
+
+  if (metricsLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (metricsError) {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        Failed to load dashboard metrics. Is the backend running on port 8001?
+      </Alert>
+    );
+  }
+
+  const metrics = metricsData;
+  const complianceData = metrics?.trends?.compliance || [];
+  const riskDist = metrics?.risk_distribution || {};
+  const riskDistribution = Object.entries(riskDist).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    value: value as number,
+    color: RISK_COLORS[name] || '#9e9e9e',
+  }));
+  const regulatoryStatus = metrics?.regulatory_status || [];
+  const activities = activitiesData?.activities || [];
 
   return (
     <Box>
@@ -129,7 +158,7 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Overall Compliance"
-            value="92%"
+            value={`${metrics?.overall_compliance || 0}%`}
             change="+3%"
             trend="up"
             color="#4caf50"
@@ -138,7 +167,7 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Active Risks"
-            value="50"
+            value={metrics?.active_risks || 0}
             change="-12%"
             trend="down"
             color="#2196f3"
@@ -147,7 +176,7 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Open Gaps"
-            value="15"
+            value={metrics?.open_gaps || 0}
             change="-5"
             trend="down"
             color="#ff9800"
@@ -156,7 +185,7 @@ const Dashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Audit Readiness"
-            value="87%"
+            value={`${metrics?.audit_readiness || 0}%`}
             change="+8%"
             trend="up"
             color="#9c27b0"
@@ -225,22 +254,10 @@ const Dashboard: React.FC = () => {
                 {riskDistribution.map((item) => (
                   <Box
                     key={item.name}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      mb: 1,
-                    }}
+                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box
-                        sx={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: 1,
-                          backgroundColor: item.color,
-                        }}
-                      />
+                      <Box sx={{ width: 12, height: 12, borderRadius: 1, backgroundColor: item.color }} />
                       <Typography variant="body2">{item.name}</Typography>
                     </Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -259,7 +276,7 @@ const Dashboard: React.FC = () => {
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
                 Regulatory Compliance
               </Typography>
-              {regulatoryStatus.map((reg) => (
+              {regulatoryStatus.map((reg: any) => (
                 <Box key={reg.name} sx={{ mb: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -277,8 +294,7 @@ const Dashboard: React.FC = () => {
                       borderRadius: 4,
                       backgroundColor: '#e0e0e0',
                       '& .MuiLinearProgress-bar': {
-                        backgroundColor:
-                          reg.compliance >= reg.target ? '#4caf50' : '#ff9800',
+                        backgroundColor: reg.compliance >= reg.target ? '#4caf50' : '#ff9800',
                         borderRadius: 4,
                       },
                     }}
@@ -300,48 +316,32 @@ const Dashboard: React.FC = () => {
                   <MoreVert />
                 </IconButton>
               </Box>
-              <List>
-                <ListItem sx={{ px: 0 }}>
-                  <Avatar sx={{ bgcolor: '#4caf50', width: 36, height: 36, mr: 2 }}>
-                    <CheckCircle sx={{ fontSize: 20 }} />
-                  </Avatar>
-                  <ListItemText
-                    primary="GDPR Audit Completed"
-                    secondary="2 hours ago"
-                    primaryTypographyProps={{ fontWeight: 500 }}
-                  />
-                </ListItem>
-                <ListItem sx={{ px: 0 }}>
-                  <Avatar sx={{ bgcolor: '#ff9800', width: 36, height: 36, mr: 2 }}>
-                    <Warning sx={{ fontSize: 20 }} />
-                  </Avatar>
-                  <ListItemText
-                    primary="New Risk Identified"
-                    secondary="5 hours ago"
-                    primaryTypographyProps={{ fontWeight: 500 }}
-                  />
-                </ListItem>
-                <ListItem sx={{ px: 0 }}>
-                  <Avatar sx={{ bgcolor: '#2196f3', width: 36, height: 36, mr: 2 }}>
-                    <Schedule sx={{ fontSize: 20 }} />
-                  </Avatar>
-                  <ListItemText
-                    primary="Policy Review Scheduled"
-                    secondary="1 day ago"
-                    primaryTypographyProps={{ fontWeight: 500 }}
-                  />
-                </ListItem>
-                <ListItem sx={{ px: 0 }}>
-                  <Avatar sx={{ bgcolor: '#f44336', width: 36, height: 36, mr: 2 }}>
-                    <Error sx={{ fontSize: 20 }} />
-                  </Avatar>
-                  <ListItemText
-                    primary="Critical Gap Detected"
-                    secondary="2 days ago"
-                    primaryTypographyProps={{ fontWeight: 500 }}
-                  />
-                </ListItem>
-              </List>
+              {activitiesLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : (
+                <List>
+                  {activities.map((activity: any) => {
+                    const config = SEVERITY_CONFIG[activity.severity] || SEVERITY_CONFIG.info;
+                    const timestamp = activity.timestamp
+                      ? new Date(activity.timestamp).toLocaleString()
+                      : '';
+                    return (
+                      <ListItem key={activity.id} sx={{ px: 0 }}>
+                        <Avatar sx={{ bgcolor: config.color, width: 36, height: 36, mr: 2 }}>
+                          {config.icon}
+                        </Avatar>
+                        <ListItemText
+                          primary={activity.title}
+                          secondary={timestamp}
+                          primaryTypographyProps={{ fontWeight: 500 }}
+                        />
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              )}
             </CardContent>
           </Card>
         </Grid>

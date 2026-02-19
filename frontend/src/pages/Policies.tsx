@@ -1,14 +1,67 @@
-import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, Chip, Button } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Chip,
+  Button,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from '@mui/material';
 import { Add, Edit } from '@mui/icons-material';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSnackbar } from 'notistack';
+import { policiesAPI } from '../services/api';
+
+const defaultPolicies = [
+  { policy_id: 'POL-DEFAULT-001', name: 'Data Protection Policy', version: '2.0', status: 'active', created_at: '2024-01-10' },
+  { policy_id: 'POL-DEFAULT-002', name: 'Access Control Policy', version: '1.5', status: 'active', created_at: '2024-01-08' },
+  { policy_id: 'POL-DEFAULT-003', name: 'Incident Response Policy', version: '3.1', status: 'review', created_at: '2023-12-20' },
+  { policy_id: 'POL-DEFAULT-004', name: 'Business Continuity Policy', version: '2.2', status: 'active', created_at: '2024-01-05' },
+];
 
 const Policies: React.FC = () => {
-  const policies = [
-    { id: 1, name: 'Data Protection Policy', version: '2.0', status: 'Active', lastUpdated: '2024-01-10' },
-    { id: 2, name: 'Access Control Policy', version: '1.5', status: 'Active', lastUpdated: '2024-01-08' },
-    { id: 3, name: 'Incident Response Policy', version: '3.1', status: 'Review', lastUpdated: '2023-12-20' },
-    { id: 4, name: 'Business Continuity Policy', version: '2.2', status: 'Active', lastUpdated: '2024-01-05' },
-  ];
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newPolicy, setNewPolicy] = useState({ name: '', content: '', version: '1.0' });
+  const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['policies'],
+    queryFn: () => policiesAPI.list().then(res => res.data),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (policy: { name: string; content: string; version: string }) =>
+      policiesAPI.create(policy),
+    onSuccess: () => {
+      enqueueSnackbar('Policy created successfully', { variant: 'success' });
+      queryClient.invalidateQueries({ queryKey: ['policies'] });
+      setCreateOpen(false);
+      setNewPolicy({ name: '', content: '', version: '1.0' });
+    },
+    onError: () => {
+      enqueueSnackbar('Failed to create policy', { variant: 'error' });
+    },
+  });
+
+  const apiPolicies = data?.policies || [];
+  const policies = apiPolicies.length > 0 ? apiPolicies : defaultPolicies;
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        Failed to load policies. Is the backend running?
+      </Alert>
+    );
+  }
 
   return (
     <Box>
@@ -21,38 +74,82 @@ const Policies: React.FC = () => {
             Manage and track organizational policies
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<Add />}>
+        <Button variant="contained" startIcon={<Add />} onClick={() => setCreateOpen(true)}>
           New Policy
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        {policies.map((policy) => (
-          <Grid item xs={12} sm={6} md={4} key={policy.id}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                  {policy.name}
-                </Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Chip label={`v${policy.version}`} size="small" sx={{ mr: 1 }} />
-                  <Chip
-                    label={policy.status}
-                    size="small"
-                    color={policy.status === 'Active' ? 'success' : 'warning'}
-                  />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Last updated: {policy.lastUpdated}
-                </Typography>
-                <Button size="small" startIcon={<Edit />}>
-                  Edit Policy
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          {policies.map((policy: any) => (
+            <Grid item xs={12} sm={6} md={4} key={policy.policy_id || policy.name}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                    {policy.name}
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Chip label={`v${policy.version}`} size="small" sx={{ mr: 1 }} />
+                    <Chip
+                      label={policy.status === 'active' ? 'Active' : 'Review'}
+                      size="small"
+                      color={policy.status === 'active' ? 'success' : 'warning'}
+                    />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Created: {new Date(policy.created_at).toLocaleDateString()}
+                  </Typography>
+                  <Button size="small" startIcon={<Edit />}>
+                    Edit Policy
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Policy</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Policy Name"
+            value={newPolicy.name}
+            onChange={(e) => setNewPolicy({ ...newPolicy, name: e.target.value })}
+            sx={{ mt: 1, mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Version"
+            value={newPolicy.version}
+            onChange={(e) => setNewPolicy({ ...newPolicy, version: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Content"
+            value={newPolicy.content}
+            onChange={(e) => setNewPolicy({ ...newPolicy, content: e.target.value })}
+            multiline
+            rows={4}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => createMutation.mutate(newPolicy)}
+            disabled={!newPolicy.name || !newPolicy.content || createMutation.isPending}
+          >
+            {createMutation.isPending ? 'Creating...' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

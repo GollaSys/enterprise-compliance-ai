@@ -19,6 +19,7 @@ import {
   InputLabel,
   Alert,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -30,108 +31,83 @@ import {
   Refresh,
   FilterList,
 } from '@mui/icons-material';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useSnackbar } from 'notistack';
+import { complianceAPI } from '../services/api';
 
 const Compliance: React.FC = () => {
-  const [activeStep] = useState(0);
   const [selectedRegulation, setSelectedRegulation] = useState('');
-  const [analysisStatus, setAnalysisStatus] = useState('idle');
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const { enqueueSnackbar } = useSnackbar();
+
+  const { data: regulationsData, isLoading: regulationsLoading } = useQuery({
+    queryKey: ['regulations'],
+    queryFn: () => complianceAPI.getRegulations().then(res => res.data),
+  });
+
+  const analyzeMutation = useMutation({
+    mutationFn: (regulationType: string) =>
+      complianceAPI.analyze({
+        regulation_type: regulationType,
+        document_ids: [],
+        include_evidence: true,
+        generate_report: true,
+      }),
+    onSuccess: (res) => {
+      setAnalysisResult(res.data);
+      enqueueSnackbar('Compliance analysis completed!', { variant: 'success' });
+    },
+    onError: () => {
+      enqueueSnackbar('Analysis failed. Please try again.', { variant: 'error' });
+    },
+  });
 
   const steps = [
-    {
-      label: 'Select Regulations',
-      description: 'Choose regulatory frameworks for analysis',
-    },
-    {
-      label: 'Upload Documents',
-      description: 'Upload relevant compliance documents',
-    },
-    {
-      label: 'Map Policies',
-      description: 'Map internal policies to regulations',
-    },
-    {
-      label: 'Validate Evidence',
-      description: 'Validate compliance evidence',
-    },
-    {
-      label: 'Generate Report',
-      description: 'Generate compliance assessment report',
-    },
+    { label: 'Select Regulations', description: 'Choose regulatory frameworks for analysis' },
+    { label: 'Upload Documents', description: 'Upload relevant compliance documents' },
+    { label: 'Map Policies', description: 'Map internal policies to regulations' },
+    { label: 'Validate Evidence', description: 'Validate compliance evidence' },
+    { label: 'Generate Report', description: 'Generate compliance assessment report' },
   ];
 
-  const regulations = [
-    { id: 'GDPR', name: 'General Data Protection Regulation', jurisdiction: 'EU' },
-    { id: 'SOX', name: 'Sarbanes-Oxley Act', jurisdiction: 'US' },
-    { id: 'FINRA', name: 'Financial Industry Regulatory Authority', jurisdiction: 'US' },
-    { id: 'SEC', name: 'Securities and Exchange Commission', jurisdiction: 'US' },
-  ];
+  const regulations = regulationsData?.regulations || [];
+  const results = analysisResult?.results;
+  const gaps = results?.gaps || [];
+  const risks = results?.risks || [];
+  const recommendations = results?.recommendations || [];
+  const complianceScore = results?.compliance_score;
 
-  const complianceItems = [
-    {
-      id: '1',
-      regulation: 'GDPR',
-      requirement: 'Data Protection Officer',
-      status: 'compliant',
-      score: 95,
-      lastAssessed: '2024-01-15',
-    },
-    {
-      id: '2',
-      regulation: 'GDPR',
-      requirement: 'Privacy Policy',
-      status: 'partial',
-      score: 75,
-      lastAssessed: '2024-01-14',
-    },
-    {
-      id: '3',
-      regulation: 'SOX',
-      requirement: 'Internal Controls',
-      status: 'non-compliant',
-      score: 45,
-      lastAssessed: '2024-01-10',
-    },
-    {
-      id: '4',
-      regulation: 'FINRA',
-      requirement: 'Record Keeping',
-      status: 'compliant',
-      score: 92,
-      lastAssessed: '2024-01-12',
-    },
-  ];
+  const activeStep = analyzeMutation.isPending ? 2 : analysisResult ? 4 : 0;
 
   const handleStartAnalysis = () => {
-    setAnalysisStatus('running');
-    setTimeout(() => {
-      setAnalysisStatus('completed');
-    }, 3000);
+    if (selectedRegulation) {
+      setAnalysisResult(null);
+      analyzeMutation.mutate(selectedRegulation);
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'compliant':
-        return 'success';
-      case 'partial':
-        return 'warning';
-      case 'non-compliant':
-        return 'error';
-      default:
-        return 'default';
+      case 'compliant': return 'success';
+      case 'partial': return 'warning';
+      case 'non-compliant': return 'error';
+      default: return 'default';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'compliant':
-        return <CheckCircle sx={{ color: '#4caf50' }} />;
-      case 'partial':
-        return <Warning sx={{ color: '#ff9800' }} />;
-      case 'non-compliant':
-        return <Error sx={{ color: '#f44336' }} />;
-      default:
-        return <Info />;
+      case 'compliant': return <CheckCircle sx={{ color: '#4caf50' }} />;
+      case 'partial': return <Warning sx={{ color: '#ff9800' }} />;
+      case 'non-compliant': return <Error sx={{ color: '#f44336' }} />;
+      default: return <Info />;
     }
+  };
+
+  const getSeverityStatus = (severity: string) => {
+    if (severity === 'high') return 'non-compliant';
+    if (severity === 'medium') return 'partial';
+    return 'compliant';
   };
 
   return (
@@ -145,7 +121,7 @@ const Compliance: React.FC = () => {
         </Typography>
       </Box>
 
-      {analysisStatus === 'running' && (
+      {analyzeMutation.isPending && (
         <Alert severity="info" sx={{ mb: 3 }}>
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
@@ -156,9 +132,9 @@ const Compliance: React.FC = () => {
         </Alert>
       )}
 
-      {analysisStatus === 'completed' && (
+      {analysisResult && (
         <Alert severity="success" sx={{ mb: 3 }}>
-          Compliance analysis completed successfully!
+          Compliance analysis completed! Score: {complianceScore}%
         </Alert>
       )}
 
@@ -177,27 +153,31 @@ const Compliance: React.FC = () => {
                   onChange={(e) => setSelectedRegulation(e.target.value)}
                   label="Regulation Type"
                 >
-                  {regulations.map((reg) => (
-                    <MenuItem key={reg.id} value={reg.id}>
-                      {reg.name}
-                    </MenuItem>
-                  ))}
+                  {regulationsLoading ? (
+                    <MenuItem disabled>Loading...</MenuItem>
+                  ) : (
+                    regulations.map((reg: any) => (
+                      <MenuItem key={reg.id} value={reg.id}>
+                        {reg.name}
+                      </MenuItem>
+                    ))
+                  )}
                 </Select>
               </FormControl>
 
               <Button
                 variant="contained"
                 fullWidth
-                startIcon={<PlayArrow />}
+                startIcon={analyzeMutation.isPending ? <CircularProgress size={20} color="inherit" /> : <PlayArrow />}
                 onClick={handleStartAnalysis}
-                disabled={!selectedRegulation || analysisStatus === 'running'}
+                disabled={!selectedRegulation || analyzeMutation.isPending}
                 sx={{ mb: 2 }}
               >
-                Start Analysis
+                {analyzeMutation.isPending ? 'Analyzing...' : 'Start Analysis'}
               </Button>
 
               <Stepper activeStep={activeStep} orientation="vertical">
-                {steps.map((step, index) => (
+                {steps.map((step) => (
                   <Step key={step.label}>
                     <StepLabel>{step.label}</StepLabel>
                     <StepContent>
@@ -217,13 +197,13 @@ const Compliance: React.FC = () => {
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Compliance Status
+                  {analysisResult ? 'Analysis Results' : 'Compliance Status'}
                 </Typography>
                 <Box>
                   <IconButton size="small">
                     <FilterList />
                   </IconButton>
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={() => { setAnalysisResult(null); setSelectedRegulation(''); }}>
                     <Refresh />
                   </IconButton>
                   <IconButton size="small">
@@ -232,48 +212,73 @@ const Compliance: React.FC = () => {
                 </Box>
               </Box>
 
-              <Grid container spacing={2}>
-                {complianceItems.map((item) => (
-                  <Grid item xs={12} key={item.id}>
-                    <Paper
-                      sx={{
-                        p: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        borderLeft: `4px solid ${
-                          item.status === 'compliant' ? '#4caf50' :
-                          item.status === 'partial' ? '#ff9800' : '#f44336'
-                        }`,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        {getStatusIcon(item.status)}
+              {analysisResult ? (
+                <Grid container spacing={2}>
+                  {gaps.map((gap: any) => {
+                    const status = getSeverityStatus(gap.severity);
+                    return (
+                      <Grid item xs={12} key={gap.id}>
+                        <Paper
+                          sx={{
+                            p: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderLeft: `4px solid ${
+                              status === 'non-compliant' ? '#f44336' :
+                              status === 'partial' ? '#ff9800' : '#4caf50'
+                            }`,
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            {getStatusIcon(status)}
+                            <Box>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                {gap.description}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Gap ID: {gap.id} • Severity: {gap.severity}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Chip
+                            label={gap.severity}
+                            size="small"
+                            color={getStatusColor(status) as any}
+                          />
+                        </Paper>
+                      </Grid>
+                    );
+                  })}
+                  {recommendations.map((rec: any, idx: number) => (
+                    <Grid item xs={12} key={idx}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          borderLeft: '4px solid #2196f3',
+                        }}
+                      >
+                        <Info sx={{ color: '#2196f3' }} />
                         <Box>
                           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                            {item.requirement}
+                            {rec.action}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {item.regulation} • Last assessed: {item.lastAssessed}
+                            Priority: {rec.priority}
                           </Typography>
                         </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{ textAlign: 'right' }}>
-                          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                            {item.score}%
-                          </Typography>
-                          <Chip
-                            label={item.status.replace('-', ' ')}
-                            size="small"
-                            color={getStatusColor(item.status) as any}
-                          />
-                        </Box>
-                      </Box>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              ) : (
+                <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                  Select a regulation and click "Start Analysis" to begin.
+                </Typography>
+              )}
             </CardContent>
           </Card>
 
@@ -282,22 +287,10 @@ const Compliance: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
-                    Total Requirements
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    247
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
-                    Compliant
+                    Compliance Score
                   </Typography>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: '#4caf50' }}>
-                    198
+                    {complianceScore ? `${complianceScore}%` : '--'}
                   </Typography>
                 </CardContent>
               </Card>
@@ -306,10 +299,10 @@ const Compliance: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
-                    Partial
+                    Gaps Found
                   </Typography>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: '#ff9800' }}>
-                    32
+                    {gaps.length}
                   </Typography>
                 </CardContent>
               </Card>
@@ -318,10 +311,22 @@ const Compliance: React.FC = () => {
               <Card>
                 <CardContent>
                   <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
-                    Non-Compliant
+                    Risks Identified
                   </Typography>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: '#f44336' }}>
-                    17
+                    {risks.length}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card>
+                <CardContent>
+                  <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
+                    Recommendations
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#2196f3' }}>
+                    {recommendations.length}
                   </Typography>
                 </CardContent>
               </Card>

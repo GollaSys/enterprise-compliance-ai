@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import uuid
 from dotenv import load_dotenv
@@ -24,10 +24,23 @@ app.add_middleware(
 )
 
 # In-memory stores
-documents_store: List[Dict] = []
+documents_store: List[Dict] = [
+    {"id": "DOC-001", "filename": "GDPR Compliance Manual.pdf", "doc_type": "policy", "upload_date": "2024-01-15T10:30:00", "status": "processed", "size": 2457600},
+    {"id": "DOC-002", "filename": "SOX Audit Report Q4.docx", "doc_type": "report", "upload_date": "2024-01-14T14:20:00", "status": "processed", "size": 1843200},
+    {"id": "DOC-003", "filename": "Data Protection Policy v2.pdf", "doc_type": "policy", "upload_date": "2024-01-13T09:15:00", "status": "processed", "size": 1024000},
+    {"id": "DOC-004", "filename": "Risk Assessment Framework.pdf", "doc_type": "framework", "upload_date": "2024-01-12T16:45:00", "status": "processed", "size": 3072000},
+]
 compliance_analyses: Dict[str, Dict] = {}
-reports_store: List[Dict] = []
-policies_store: List[Dict] = []
+reports_store: List[Dict] = [
+    {"report_id": "RPT-001", "type": "executive", "period": "Q4", "generated_at": "2024-01-15T10:00:00", "status": "completed", "message": "Report generated", "content": {"executive_summary": "Q4 compliance metrics show strong improvement.", "key_findings": ["GDPR compliance at 92%", "SOX compliance improved by 10%"], "recommendations": ["Strengthen access controls"]}},
+    {"report_id": "RPT-002", "type": "compliance", "period": "Q3", "generated_at": "2024-01-10T14:30:00", "status": "completed", "message": "Report generated", "content": {"executive_summary": "GDPR compliance assessment complete.", "key_findings": ["DPO appointed", "Privacy policy updated"], "recommendations": ["Implement data retention schedule"]}},
+]
+policies_store: List[Dict] = [
+    {"policy_id": "POL-001", "name": "Data Protection Policy", "version": "2.0", "status": "active", "created_at": "2024-01-10T00:00:00", "content": "Comprehensive data protection guidelines"},
+    {"policy_id": "POL-002", "name": "Access Control Policy", "version": "1.5", "status": "active", "created_at": "2024-01-08T00:00:00", "content": "Access control procedures and requirements"},
+    {"policy_id": "POL-003", "name": "Incident Response Policy", "version": "3.1", "status": "review", "created_at": "2023-12-20T00:00:00", "content": "Incident response procedures"},
+    {"policy_id": "POL-004", "name": "Business Continuity Policy", "version": "2.2", "status": "active", "created_at": "2024-01-05T00:00:00", "content": "Business continuity planning guidelines"},
+]
 risks_store: List[Dict] = [
     {"id": "RISK-001", "level": "high", "description": "Data breach risk", "status": "open", "score": 7.5},
     {"id": "RISK-002", "level": "medium", "description": "Access control gap", "status": "open", "score": 5.2},
@@ -119,7 +132,13 @@ async def get_dashboard_metrics():
             "high": 8,
             "medium": 15,
             "low": 24
-        }
+        },
+        "regulatory_status": [
+            {"name": "GDPR", "compliance": 92, "target": 95},
+            {"name": "SOX", "compliance": 88, "target": 90},
+            {"name": "FINRA", "compliance": 94, "target": 95},
+            {"name": "SEC", "compliance": 85, "target": 90}
+        ]
     }
 
 
@@ -131,15 +150,29 @@ async def get_recent_activities():
                 "id": "1",
                 "type": "audit_completed",
                 "title": "GDPR Audit Completed",
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": (datetime.now() - timedelta(hours=2)).isoformat(),
                 "severity": "success"
             },
             {
                 "id": "2",
                 "type": "risk_identified",
                 "title": "New Risk Identified",
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": (datetime.now() - timedelta(hours=5)).isoformat(),
                 "severity": "warning"
+            },
+            {
+                "id": "3",
+                "type": "policy_review",
+                "title": "Policy Review Scheduled",
+                "timestamp": (datetime.now() - timedelta(days=1)).isoformat(),
+                "severity": "info"
+            },
+            {
+                "id": "4",
+                "type": "gap_detected",
+                "title": "Critical Gap Detected",
+                "timestamp": (datetime.now() - timedelta(days=2)).isoformat(),
+                "severity": "error"
             }
         ]
     }

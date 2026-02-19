@@ -17,6 +17,8 @@ export const dashboardAPI = {
 export const complianceAPI = {
   analyze: (data: any) => api.post('/api/v1/compliance/analyze', data),
   getRegulations: () => api.get('/api/v1/compliance/regulations'),
+  getStatus: (id: string) => api.get(`/api/v1/compliance/status/${id}`),
+  getResults: (id: string) => api.get(`/api/v1/compliance/results/${id}`),
 };
 
 export const documentsAPI = {
@@ -34,6 +36,17 @@ export const agentsAPI = {
 export const reportsAPI = {
   generate: (data: any) => api.post('/api/v1/reports/generate', data),
   list: () => api.get('/api/v1/reports'),
+  get: (id: string) => api.get(`/api/v1/reports/${id}`),
+};
+
+export const policiesAPI = {
+  list: () => api.get('/api/v1/policies'),
+  create: (data: any) => api.post('/api/v1/policies', null, { params: data }),
+};
+
+export const risksAPI = {
+  list: () => api.get('/api/v1/risks'),
+  assess: (data: any) => api.post('/api/v1/risks/assess', data),
 };
 
 export default api;
