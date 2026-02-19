@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Simple backend without external dependencies
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: compliance-backend
+    ports:
+      - "8001:8001"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-dummy_key}
+    networks:
+      - compliance-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # React frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: compliance-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8001
+    depends_on:
+      - backend
+    networks:
+      - compliance-network
+
+networks:
+  compliance-network:
+    driver: bridge

@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.minimal
+    container_name: compliance-backend
+    ports:
+      - "8001:8001"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-test_key}
+      - DATABASE_URL=sqlite:///./compliance.db
+    volumes:
+      - ./src:/app/src
+    networks:
+      - compliance-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: compliance-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8001
+    depends_on:
+      - backend
+    networks:
+      - compliance-network
+
+networks:
+  compliance-network:
+    driver: bridge

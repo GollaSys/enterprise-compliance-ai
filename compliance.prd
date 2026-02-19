@@ -1,0 +1,84 @@
+
+------------------------------------------------------------------------
+
+# 1. Business Problem
+
+Large enterprises face challenges in:
+
+-   Regulatory compliance monitoring (SEC, FINRA, SOX, GDPR)
+-   Internal policy adherence validation
+-   Continuous control monitoring
+-   Audit preparation and reporting
+-   Cross-functional compliance coordination
+
+Manual processes are: - Expensive - Error-prone - Slow - Not scalable
+
+------------------------------------------------------------------------
+
+# 2. Proposed Solution
+
+An AI-powered multi-agent compliance platform built using CrewAI that:
+
+-   Ingests policies, regulatory documents, contracts, and internal
+    artifacts with modern UI
+-   Decomposes compliance requirements
+-   Validates operational evidence
+-   Flags risk gaps
+-   Generates structured compliance reports
+-   Provides executive-level dashboards
+
+------------------------------------------------------------------------
+
+# 3. Architecture Overview
+
+## 3.1 High-Level Components
+
+-   CrewAI Orchestrator
+-   Specialized Agents
+-   Tooling Layer (RAG, APIs, DB connectors)
+-   Memory Store (Vector DB)
+-   Human Review Interface
+-   Reporting Engine
+-   Modern UI stack
+
+
+## 3.2 Agents
+
+### 1. Regulatory Analyst Agent
+
+Extracts obligations from regulatory text.
+
+### 2. Policy Mapping Agent
+
+Maps internal policies to regulatory controls.
+
+### 3. Evidence Validator Agent
+
+Validates operational artifacts (logs, configs, reports).
+
+### 4. Risk Scoring Agent
+
+Scores compliance gaps using predefined risk models.
+
+### 5. Executive Reporting Agent
+
+Generates board-ready summaries.
+
+------------------------------------------------------------------------
+
+# 4. Technology Stack
+
+-   Python 3.11+
+-   CrewAI
+-   LangChain (RAG layer)
+-   OpenAI / Anthropic LLMs
+-   FastAPI
+-   PostgreSQL
+-   Chroma / FAISS / Pinecone
+-   Docker
+-   AWS (ECS / EKS / Lambda)
+-   Terraform
+
+------------------------------------------------------------------------
+
+
