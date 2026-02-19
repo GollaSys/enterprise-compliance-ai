@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent, Button } from '@mui/material';
-import { CloudUpload, Description } from '@mui/icons-material';
+import { CloudUpload } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
 
 const Documents: React.FC = () => {

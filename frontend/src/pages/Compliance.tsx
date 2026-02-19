@@ -13,14 +13,12 @@ import {
   Paper,
   Chip,
   LinearProgress,
-  TextField,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
   Alert,
   IconButton,
-  Tooltip,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -34,7 +32,7 @@ import {
 } from '@mui/icons-material';
 
 const Compliance: React.FC = () => {
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep] = useState(0);
   const [selectedRegulation, setSelectedRegulation] = useState('');
   const [analysisStatus, setAnalysisStatus] = useState('idle');
 

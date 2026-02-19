@@ -8,11 +8,9 @@ import {
   LinearProgress,
   Chip,
   IconButton,
-  Paper,
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
   Avatar,
 } from '@mui/material';
 import {
@@ -27,12 +25,8 @@ import {
   ArrowDownward,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -40,7 +34,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 
