@@ -20,13 +20,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { policiesAPI } from '../services/api';
 
-const defaultPolicies = [
-  { policy_id: 'POL-DEFAULT-001', name: 'Data Protection Policy', version: '2.0', status: 'active', created_at: '2024-01-10' },
-  { policy_id: 'POL-DEFAULT-002', name: 'Access Control Policy', version: '1.5', status: 'active', created_at: '2024-01-08' },
-  { policy_id: 'POL-DEFAULT-003', name: 'Incident Response Policy', version: '3.1', status: 'review', created_at: '2023-12-20' },
-  { policy_id: 'POL-DEFAULT-004', name: 'Business Continuity Policy', version: '2.2', status: 'active', created_at: '2024-01-05' },
-];
-
 const Policies: React.FC = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [newPolicy, setNewPolicy] = useState({ name: '', content: '', version: '1.0' });
@@ -52,8 +45,7 @@ const Policies: React.FC = () => {
     },
   });
 
-  const apiPolicies = data?.policies || [];
-  const policies = apiPolicies.length > 0 ? apiPolicies : defaultPolicies;
+  const policies = data?.policies || [];
 
   if (error) {
     return (
@@ -83,6 +75,20 @@ const Policies: React.FC = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
+      ) : policies.length === 0 ? (
+        <Card>
+          <CardContent sx={{ textAlign: 'center', py: 6 }}>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+              No policies yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Click "New Policy" to create your first organizational policy.
+            </Typography>
+            <Button variant="contained" startIcon={<Add />} onClick={() => setCreateOpen(true)}>
+              New Policy
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <Grid container spacing={3}>
           {policies.map((policy: any) => (

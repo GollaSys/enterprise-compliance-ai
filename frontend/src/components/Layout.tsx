@@ -26,12 +26,15 @@ import {
   Warning as RiskIcon,
   Assessment as ComplianceIcon,
   BarChart as ReportsIcon,
+  SmartToy as AgentsIcon,
   Settings as SettingsIcon,
   Notifications as NotificationIcon,
   AccountCircle,
   ChevronLeft,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { dashboardAPI, risksAPI } from '../services/api';
 
 const drawerWidth = 280;
 
@@ -45,6 +48,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Fetch live counts for badges
+  const { data: metricsData } = useQuery({
+    queryKey: ['dashboard-metrics'],
+    queryFn: () => dashboardAPI.getMetrics().then(res => res.data),
+    refetchInterval: 30000,
+  });
+  const { data: risksData } = useQuery({
+    queryKey: ['risks'],
+    queryFn: () => risksAPI.list().then(res => res.data),
+    refetchInterval: 30000,
+  });
+  const { data: activitiesData } = useQuery({
+    queryKey: ['activities'],
+    queryFn: () => dashboardAPI.getActivities().then(res => res.data),
+    refetchInterval: 30000,
+  });
+
+  const openRisksCount = risksData?.total || 0;
+  const openGapsCount = metricsData?.open_gaps || 0;
+  const activitiesCount = activitiesData?.activities?.length || 0;
+  const complianceScore = metricsData?.overall_compliance || 0;
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -61,11 +86,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', badge: null },
-    { text: 'Compliance', icon: <ComplianceIcon />, path: '/compliance', badge: '3' },
+    { text: 'Compliance', icon: <ComplianceIcon />, path: '/compliance', badge: openGapsCount > 0 ? String(openGapsCount) : null },
     { text: 'Documents', icon: <DocumentIcon />, path: '/documents', badge: null },
     { text: 'Policies', icon: <PolicyIcon />, path: '/policies', badge: null },
-    { text: 'Risks', icon: <RiskIcon />, path: '/risks', badge: '5' },
+    { text: 'Risks', icon: <RiskIcon />, path: '/risks', badge: openRisksCount > 0 ? String(openRisksCount) : null },
     { text: 'Reports', icon: <ReportsIcon />, path: '/reports', badge: null },
+    { text: 'Agents', icon: <AgentsIcon />, path: '/agents', badge: null },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings', badge: null },
   ];
 
@@ -170,10 +196,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             Compliance Score
           </Typography>
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            92%
+            {complianceScore > 0 ? `${complianceScore}%` : '--'}
           </Typography>
           <Typography variant="caption" sx={{ opacity: 0.9 }}>
-            Excellent Performance
+            {complianceScore >= 90 ? 'Excellent Performance' :
+             complianceScore >= 75 ? 'Good Performance' :
+             complianceScore >= 50 ? 'Needs Improvement' :
+             complianceScore > 0 ? 'Requires Attention' :
+             'Run an analysis to see score'}
           </Typography>
         </Box>
       </Box>
@@ -207,7 +237,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {menuItems.find((item) => item.path === location.pathname)?.text || 'Dashboard'}
           </Typography>
           <IconButton color="inherit" sx={{ mr: 2 }}>
-            <Badge badgeContent={4} color="error">
+            <Badge badgeContent={activitiesCount > 0 ? activitiesCount : undefined} color="error">
               <NotificationIcon />
             </Badge>
           </IconButton>

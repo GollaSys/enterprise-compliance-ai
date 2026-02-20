@@ -39,7 +39,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
-import { dashboardAPI } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { dashboardAPI, agentsAPI } from '../services/api';
 
 const RISK_COLORS: Record<string, string> = {
   critical: '#f44336',
@@ -106,6 +107,8 @@ const StatCard = ({ title, value, change, trend, color }: any) => (
 );
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+
   const { data: metricsData, isLoading: metricsLoading, error: metricsError } = useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: () => dashboardAPI.getMetrics().then(res => res.data),
@@ -115,6 +118,13 @@ const Dashboard: React.FC = () => {
     queryKey: ['dashboard-activities'],
     queryFn: () => dashboardAPI.getActivities().then(res => res.data),
   });
+
+  const { data: agentsData } = useQuery({
+    queryKey: ['agents-status'],
+    queryFn: () => agentsAPI.getStatus().then(res => res.data),
+  });
+
+  const agents = Array.isArray(agentsData) ? agentsData : [];
 
   if (metricsLoading) {
     return (
@@ -320,6 +330,10 @@ const Dashboard: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress size={24} />
                 </Box>
+              ) : activities.length === 0 ? (
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                  No activities yet. Upload documents, run analyses, or generate reports to see activity here.
+                </Typography>
               ) : (
                 <List>
                   {activities.map((activity: any) => {
@@ -342,6 +356,56 @@ const Dashboard: React.FC = () => {
                   })}
                 </List>
               )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Agent Status Card */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Agent Status
+                </Typography>
+                <Chip
+                  label="View All"
+                  size="small"
+                  clickable
+                  color="primary"
+                  variant="outlined"
+                  onClick={() => navigate('/agents')}
+                />
+              </Box>
+              {agents.map((agent: any) => (
+                <Box
+                  key={agent.name}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    py: 1,
+                    '&:not(:last-child)': { borderBottom: '1px solid #f0f0f0' },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: agent.status === 'active' ? '#4caf50' : '#ff9800',
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {agent.name}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {agent.tasks_completed} tasks completed
+                  </Typography>
+                </Box>
+              ))}
             </CardContent>
           </Card>
         </Grid>

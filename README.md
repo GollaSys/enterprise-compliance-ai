@@ -14,8 +14,9 @@ An AI-powered multi-agent compliance platform for enterprise regulatory complian
 - **Gap Analysis** -- Identify coverage gaps between your policies and regulatory requirements
 - **Executive Reporting** -- Generate board-ready compliance reports with executive summaries and recommendations
 - **Interactive Dashboard** -- Real-time compliance metrics, risk distribution charts, trend lines, and activity feeds
+- **Agent Orchestration Visualization** -- Visual pipeline showing how 5 CrewAI agents collaborate sequentially, with live demo mode that animates agent execution in real-time, detailed agent cards with tools/backstories, and performance metrics charts
 - **Document Management** -- Upload, categorize, and process compliance documents
-- **RESTful API** -- 20+ endpoints with Swagger/OpenAPI documentation
+- **RESTful API** -- 25+ endpoints with Swagger/OpenAPI documentation
 
 ---
 
@@ -358,10 +359,15 @@ All endpoints are prefixed under the backend at `http://localhost:8001`.
 
 ### Agents
 
-| Method | Endpoint                                | Description                       |
-| ------ | --------------------------------------- | --------------------------------- |
-| GET    | `/api/v1/agents/status`                 | Get status of all 5 agents        |
-| POST   | `/api/v1/agents/{agent_name}/execute`   | Execute a task on a specific agent|
+| Method | Endpoint                                            | Description                                |
+| ------ | --------------------------------------------------- | ------------------------------------------ |
+| GET    | `/api/v1/agents/status`                             | Get status of all 5 agents                 |
+| GET    | `/api/v1/agents/details`                            | Get detailed agent metadata (roles, tools)  |
+| GET    | `/api/v1/agents/orchestration`                      | Get pipeline definition with data flow      |
+| GET    | `/api/v1/agents/metrics`                            | Get agent performance metrics               |
+| POST   | `/api/v1/agents/orchestration/run`                  | Start a simulated orchestration run         |
+| GET    | `/api/v1/agents/orchestration/{run_id}/timeline`    | Get step-by-step execution timeline         |
+| POST   | `/api/v1/agents/{agent_name}/execute`               | Execute a task on a specific agent          |
 
 ### Reports
 
@@ -488,6 +494,7 @@ enterprise-compliance-ai/
 |       |   |-- Documents.tsx   # Document upload and management
 |       |   |-- Policies.tsx    # Policy management
 |       |   |-- Reports.tsx     # Report generation
+|       |   |-- Agents.tsx      # Agent orchestration visualization
 |       |   |-- Risks.tsx       # Risk assessment view
 |       |   |-- Settings.tsx    # Platform settings
 |       |-- services/

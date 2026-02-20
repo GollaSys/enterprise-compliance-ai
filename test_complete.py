@@ -31,10 +31,10 @@ class ComplianceTestSuite:
 
         tests = [
             ("System Health", self.test_health),
-            ("Dashboard Metrics", self.test_dashboard),
             ("Document Upload", self.test_document_upload),
             ("Policy Management", self.test_policies),
             ("Compliance Analysis", self.test_compliance_analysis),
+            ("Dashboard Metrics", self.test_dashboard),
             ("Risk Assessment", self.test_risk_assessment),
             ("Evidence Validation", self.test_evidence_validation),
             ("Gap Analysis", self.test_gap_analysis),
@@ -84,23 +84,28 @@ class ComplianceTestSuite:
         print(f"  • Services: {list(health['services'].keys())}")
 
     def test_dashboard(self):
-        """Test dashboard metrics"""
+        """Test dashboard metrics (runs after compliance analysis populates data)"""
         response = requests.get(f"{self.base_url}/api/v1/dashboard/metrics")
         assert response.status_code == 200
         metrics = response.json()
 
         assert "overall_compliance" in metrics
-        assert metrics["overall_compliance"] > 0
+        assert "active_risks" in metrics
+        assert "open_gaps" in metrics
+        assert "audit_readiness" in metrics
+        assert metrics["overall_compliance"] > 0, "Compliance score should be > 0 after analysis"
+        assert metrics["active_risks"] > 0, "Risks should exist after compliance analysis"
         print(f"  • Overall compliance: {metrics['overall_compliance']}%")
         print(f"  • Active risks: {metrics['active_risks']}")
         print(f"  • Open gaps: {metrics['open_gaps']}")
         print(f"  • Audit readiness: {metrics['audit_readiness']}%")
 
-        # Test activities
+        # Test activities — should have entries from prior tests
         response = requests.get(f"{self.base_url}/api/v1/dashboard/activities")
         assert response.status_code == 200
         activities = response.json()
         assert "activities" in activities
+        assert len(activities["activities"]) > 0, "Activities should exist from prior actions"
         print(f"  • Recent activities: {len(activities['activities'])}")
 
     def test_document_upload(self):

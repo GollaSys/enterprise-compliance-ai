@@ -27,12 +27,15 @@ def test_dashboard():
     assert response.status_code == 200
     metrics = response.json()
     assert "overall_compliance" in metrics
+    assert "active_risks" in metrics
+    assert "risk_distribution" in metrics
     print(f"  Dashboard metrics - Compliance: {metrics['overall_compliance']}%")
 
     # Test activities
     response = requests.get(f"{BASE_URL}/api/v1/dashboard/activities")
     assert response.status_code == 200
     activities = response.json()
+    assert "activities" in activities
     print(f"  Recent activities: {len(activities['activities'])} items")
 
 def test_compliance():

@@ -27,10 +27,16 @@ export const documentsAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
   list: () => api.get('/api/v1/documents'),
+  delete: (docId: string) => api.delete(`/api/v1/documents/${docId}`),
 };
 
 export const agentsAPI = {
   getStatus: () => api.get('/api/v1/agents/status'),
+  getDetails: () => api.get('/api/v1/agents/details'),
+  getOrchestration: () => api.get('/api/v1/agents/orchestration'),
+  getMetrics: () => api.get('/api/v1/agents/metrics'),
+  startRun: (data: { regulation_type: string; document_id?: string }) => api.post('/api/v1/agents/orchestration/run', data),
+  getTimeline: (runId: string) => api.get(`/api/v1/agents/orchestration/${runId}/timeline`),
 };
 
 export const reportsAPI = {
@@ -46,6 +52,7 @@ export const policiesAPI = {
 
 export const risksAPI = {
   list: () => api.get('/api/v1/risks'),
+  get: (id: string) => api.get(`/api/v1/risks/${id}`),
   assess: (data: any) => api.post('/api/v1/risks/assess', data),
 };
 

@@ -2,7 +2,21 @@
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(npm run:*)",
+      "Bash(npm start:*)",
+      "Bash(npm test:*)",
+      "Bash(npx react-scripts build:*)",
+      "Bash(lsof:*)",
+      "Bash(source:*)"
     ],
     "deny": [],
     "ask": []

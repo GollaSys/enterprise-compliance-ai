@@ -12,6 +12,7 @@ import Documents from './pages/Documents';
 import Policies from './pages/Policies';
 import Risks from './pages/Risks';
 import Reports from './pages/Reports';
+import Agents from './pages/Agents';
 import Settings from './pages/Settings';
 
 const queryClient = new QueryClient({
@@ -131,6 +132,7 @@ function App() {
                   <Route path="/policies" element={<Policies />} />
                   <Route path="/risks" element={<Risks />} />
                   <Route path="/reports" element={<Reports />} />
+                  <Route path="/agents" element={<Agents />} />
                   <Route path="/settings" element={<Settings />} />
                 </Routes>
               </Layout>

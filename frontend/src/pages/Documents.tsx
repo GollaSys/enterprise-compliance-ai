@@ -12,19 +12,12 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { CloudUpload } from '@mui/icons-material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { CloudUpload, Delete } from '@mui/icons-material';
+import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
 import { useSnackbar } from 'notistack';
 import { documentsAPI } from '../services/api';
-
-const columns: GridColDef[] = [
-  { field: 'filename', headerName: 'Document Name', width: 300 },
-  { field: 'doc_type', headerName: 'Type', width: 150 },
-  { field: 'upload_date', headerName: 'Upload Date', width: 200 },
-  { field: 'status', headerName: 'Status', width: 120 },
-];
 
 const Documents: React.FC = () => {
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -35,6 +28,38 @@ const Documents: React.FC = () => {
     queryKey: ['documents'],
     queryFn: () => documentsAPI.list().then(res => res.data),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (docId: string) => documentsAPI.delete(docId),
+    onSuccess: () => {
+      enqueueSnackbar('Document deleted', { variant: 'success' });
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+    onError: () => {
+      enqueueSnackbar('Failed to delete document', { variant: 'error' });
+    },
+  });
+
+  const columns: GridColDef[] = [
+    { field: 'filename', headerName: 'Document Name', flex: 1, minWidth: 200 },
+    { field: 'doc_type', headerName: 'Type', width: 120 },
+    { field: 'upload_date', headerName: 'Upload Date', width: 200 },
+    { field: 'status', headerName: 'Status', width: 120 },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: '',
+      width: 60,
+      getActions: (params) => [
+        <GridActionsCellItem
+          icon={<Delete />}
+          label="Delete"
+          onClick={() => deleteMutation.mutate(params.row.id)}
+          sx={{ color: '#f44336' }}
+        />,
+      ],
+    },
+  ];
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => {
@@ -110,6 +135,7 @@ const Documents: React.FC = () => {
                 columns={columns}
                 initialState={{
                   pagination: { paginationModel: { pageSize: 10, page: 0 } },
+                  sorting: { sortModel: [{ field: 'upload_date', sort: 'desc' }] },
                 }}
                 pageSizeOptions={[10]}
                 checkboxSelection

@@ -33,8 +33,8 @@ The Enterprise Compliance AI Platform is a multi-agent AI system that automates 
 |   |  +----------+ +------------+ +-----------+ +--------+ +-----------+  |       |
 |   |  | Dashboard | | Compliance | | Documents | | Risks  | |  Reports  |  |       |
 |   |  +----------+ +------------+ +-----------+ +--------+ +-----------+  |       |
-|   |  | Policies | | Settings   |   MUI  |  Recharts  | TanStack Query |  |       |
-|   |  +----------+ +------------+---------+------------+----------------+  |       |
+|   |  | Policies | | Agents     | | Settings  |   MUI  |  Recharts     |  |       |
+|   |  +----------+ +------------+-+-----------+--------+---------------+  |       |
 |   +-----------------------------------------------------------------------+       |
 |                              | Axios HTTP (port 3000 -> 8001)                     |
 +-----------------------------------------------------------------------------------+
@@ -125,7 +125,7 @@ The Enterprise Compliance AI Platform is a multi-agent AI system that automates 
 
 | Layer | Component | Purpose |
 |-------|-----------|---------|
-| Presentation | React 18 + TypeScript | SPA with 7 pages, MUI design system, Recharts visualizations |
+| Presentation | React 18 + TypeScript | SPA with 8 pages, MUI design system, Recharts visualizations, agent orchestration UI |
 | API | FastAPI (main_simple.py) | Lightweight entry point, 20+ endpoints, in-memory storage |
 | API | FastAPI (main.py) | Full version with orchestrator, storage service, lifespan events |
 | API | Routers (5 modules) | agents, compliance, dashboard, documents, reports |
@@ -216,6 +216,7 @@ The system boundary encompasses the FastAPI backend, all five CrewAI agents, the
 | Policies | `/policies` | Manage organizational policies | Policy CRUD, version tracking, coverage mapping |
 | Risks | `/risks` | Risk register and assessment | Risk table with level/status filters, risk scoring details |
 | Reports | `/reports` | Generate and view reports | Report type selector (executive/technical/audit), period picker, PDF generation |
+| Agents | `/agents` | Agent orchestration visualization | Pipeline flow diagram, agent detail cards, live orchestration demo, performance metrics |
 | Settings | `/settings` | Platform configuration | Agent configuration, notification preferences, system settings |
 
 **Architecture:**
@@ -232,6 +233,7 @@ frontend/src/
   |     +-- Policies.tsx         # Policy management
   |     +-- Risks.tsx            # Risk register
   |     +-- Reports.tsx          # Report generation
+  |     +-- Agents.tsx           # Agent orchestration visualization
   |     +-- Settings.tsx         # Configuration
   +-- services/
         +-- api.ts               # Axios instance + API modules (dashboard, compliance,
@@ -292,7 +294,7 @@ The API layer provides two entry points that share the same endpoint structure:
 | compliance.py | /api/v1/compliance | POST /analyze, GET /status/{id}, POST /gaps/analyze, POST /evidence/validate, POST /risks/assess, GET /regulations, GET /policies | Full compliance workflow |
 | documents.py | /api/v1/documents | POST /upload, GET / | Document upload and listing |
 | reports.py | /api/v1/reports | POST /generate, GET /, GET /{id} | Report generation and retrieval |
-| agents.py | /api/v1/agents | GET /status, POST /{name}/execute | Agent management and task execution |
+| agents.py | /api/v1/agents | GET /status, GET /details, GET /orchestration, GET /metrics, POST /orchestration/run, GET /orchestration/{run_id}/timeline, POST /{name}/execute | Agent management, orchestration visualization, and task execution |
 
 **Middleware Stack:**
 ```
@@ -545,6 +547,11 @@ ComplianceOrchestrator.run_compliance_analysis(analysis_id, request_data)
 | POST | `/api/v1/evidence/validate` | `EvidenceValidationRequest` | `{validations[], total_validated, overall_validity}` | Validate evidence |
 | POST | `/api/v1/gaps/analyze` | `GapAnalysisRequest` | `{gaps[], total_gaps, critical_gaps, coverage_score}` | Analyze regulation-policy gaps |
 | GET | `/api/v1/agents/status` | -- | `List[AgentStatus]` | Agent health and task counts |
+| GET | `/api/v1/agents/details` | -- | `{agents[{id, name, role, goal, backstory, tools[], status, tasks_completed, avg_execution_time}]}` | Detailed agent metadata |
+| GET | `/api/v1/agents/orchestration` | -- | `{pipeline_type, steps[], connections[]}` | Pipeline definition with data flow |
+| GET | `/api/v1/agents/metrics` | -- | `{total_tasks, completed, failed, pending, success_rate, per_agent[]}` | Agent performance metrics |
+| POST | `/api/v1/agents/orchestration/run` | `{regulation_type}` | `{run_id, status, started_at}` | Start a simulated orchestration run |
+| GET | `/api/v1/agents/orchestration/{run_id}/timeline` | -- | `{run_id, status, total_duration, steps[]}` | Step-by-step execution timeline |
 | POST | `/api/v1/agents/{agent_name}/execute` | `Dict[str, Any]` (task_data) | `{status, agent, result}` | Execute task with specific agent |
 | POST | `/api/v1/reports/generate` | `ReportRequest` | `ReportResponse` | Generate compliance report |
 | GET | `/api/v1/reports` | Query: `report_type?, limit=50` | `{reports[]}` | List generated reports |
