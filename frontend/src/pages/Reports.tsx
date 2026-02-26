@@ -52,16 +52,16 @@ const Reports: React.FC = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle sx={{ color: '#4caf50', fontSize: 20 }} />;
-      case 'generating': return <Schedule sx={{ color: '#ff9800', fontSize: 20 }} />;
-      default: return <Schedule sx={{ color: '#9e9e9e', fontSize: 20 }} />;
+      case 'completed': return <CheckCircle sx={{ color: '#10b981', fontSize: 20 }} />;
+      case 'generating': return <Schedule sx={{ color: '#f59e0b', fontSize: 20 }} />;
+      default: return <Schedule sx={{ color: 'text.secondary', fontSize: 20 }} />;
     }
   };
 
   if (error) {
     return (
       <Alert severity="error" sx={{ m: 2 }}>
-        Failed to load reports. Is the backend running?
+        Failed to load reports. Please ensure the backend server is running.
       </Alert>
     );
   }
@@ -70,10 +70,10 @@ const Reports: React.FC = () => {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
             Reports
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Generate and manage compliance reports
           </Typography>
         </Box>

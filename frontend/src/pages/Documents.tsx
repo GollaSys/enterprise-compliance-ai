@@ -55,7 +55,7 @@ const Documents: React.FC = () => {
           icon={<Delete />}
           label="Delete"
           onClick={() => deleteMutation.mutate(params.row.id)}
-          sx={{ color: '#f44336' }}
+          sx={{ color: 'error.main' }}
         />,
       ],
     },
@@ -101,7 +101,7 @@ const Documents: React.FC = () => {
   if (error) {
     return (
       <Alert severity="error" sx={{ m: 2 }}>
-        Failed to load documents. Is the backend running?
+        Failed to load documents. Please ensure the backend server is running.
       </Alert>
     );
   }
@@ -110,10 +110,10 @@ const Documents: React.FC = () => {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
             Document Management
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Upload and manage compliance documents
           </Typography>
         </Box>
@@ -169,7 +169,7 @@ const Documents: React.FC = () => {
               <Typography>Drop the file here...</Typography>
             ) : (
               <Box>
-                <CloudUpload sx={{ fontSize: 48, color: 'grey.500', mb: 1 }} />
+                <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
                 <Typography>Drag & drop a file here, or click to select</Typography>
                 <Typography variant="caption" color="text.secondary">
                   Supported: PDF, DOC, DOCX, TXT, CSV

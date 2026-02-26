@@ -4,9 +4,9 @@ services:
     image: postgres:15-alpine
     container_name: compliance-postgres
     environment:
-      POSTGRES_USER: compliance_user
-      POSTGRES_PASSWORD: compliance_pass
-      POSTGRES_DB: compliance_db
+      POSTGRES_USER: ${POSTGRES_USER:-compliance_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-compliance_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-compliance_db}
     ports:
       - "5432:5432"
     volumes:
@@ -14,7 +14,7 @@ services:
     networks:
       - compliance-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U compliance_user"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-compliance_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -55,7 +55,7 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://compliance_user:compliance_pass@postgres:5432/compliance_db
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-compliance_user}:${POSTGRES_PASSWORD:-compliance_pass}@postgres:5432/${POSTGRES_DB:-compliance_db}
       - REDIS_URL=redis://redis:6379/0
       - CHROMA_HOST=chroma
       - CHROMA_PORT=8000
@@ -89,7 +89,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8001
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8001}
     depends_on:
       - backend
     networks:

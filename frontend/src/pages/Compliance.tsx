@@ -34,11 +34,13 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { complianceAPI } from '../services/api';
+import { useThemeContext } from '../contexts/ThemeContext';
 
 const Compliance: React.FC = () => {
   const [selectedRegulation, setSelectedRegulation] = useState('');
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const { enqueueSnackbar } = useSnackbar();
+  const { accentColor } = useThemeContext();
 
   const { data: regulationsData, isLoading: regulationsLoading } = useQuery({
     queryKey: ['regulations'],
@@ -97,9 +99,9 @@ const Compliance: React.FC = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'compliant': return <CheckCircle sx={{ color: '#4caf50' }} />;
-      case 'partial': return <Warning sx={{ color: '#ff9800' }} />;
-      case 'non-compliant': return <Error sx={{ color: '#f44336' }} />;
+      case 'compliant': return <CheckCircle sx={{ color: '#10b981' }} />;
+      case 'partial': return <Warning sx={{ color: '#f59e0b' }} />;
+      case 'non-compliant': return <Error sx={{ color: '#ef4444' }} />;
       default: return <Info />;
     }
   };
@@ -113,10 +115,10 @@ const Compliance: React.FC = () => {
   return (
     <Box>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
           Compliance Management
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body2" color="text.secondary">
           Analyze and manage regulatory compliance across your organization
         </Typography>
       </Box>
@@ -141,7 +143,7 @@ const Compliance: React.FC = () => {
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
           <Card>
-            <CardContent>
+            <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
                 Quick Analysis
               </Typography>
@@ -194,21 +196,17 @@ const Compliance: React.FC = () => {
 
         <Grid item xs={12} md={8}>
           <Card sx={{ mb: 3 }}>
-            <CardContent>
+            <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   {analysisResult ? 'Analysis Results' : 'Compliance Status'}
                 </Typography>
                 <Box>
-                  <IconButton size="small">
-                    <FilterList />
-                  </IconButton>
+                  <IconButton size="small"><FilterList /></IconButton>
                   <IconButton size="small" onClick={() => { setAnalysisResult(null); setSelectedRegulation(''); }}>
                     <Refresh />
                   </IconButton>
-                  <IconButton size="small">
-                    <Download />
-                  </IconButton>
+                  <IconButton size="small"><Download /></IconButton>
                 </Box>
               </Box>
 
@@ -225,8 +223,8 @@ const Compliance: React.FC = () => {
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             borderLeft: `4px solid ${
-                              status === 'non-compliant' ? '#f44336' :
-                              status === 'partial' ? '#ff9800' : '#4caf50'
+                              status === 'non-compliant' ? '#ef4444' :
+                              status === 'partial' ? '#f59e0b' : '#10b981'
                             }`,
                           }}
                         >
@@ -237,15 +235,11 @@ const Compliance: React.FC = () => {
                                 {gap.description}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                Gap ID: {gap.id} • Severity: {gap.severity}
+                                Gap ID: {gap.id} &bull; Severity: {gap.severity}
                               </Typography>
                             </Box>
                           </Box>
-                          <Chip
-                            label={gap.severity}
-                            size="small"
-                            color={getStatusColor(status) as any}
-                          />
+                          <Chip label={gap.severity} size="small" color={getStatusColor(status) as any} />
                         </Paper>
                       </Grid>
                     );
@@ -258,10 +252,10 @@ const Compliance: React.FC = () => {
                           display: 'flex',
                           alignItems: 'center',
                           gap: 2,
-                          borderLeft: '4px solid #2196f3',
+                          borderLeft: `4px solid ${accentColor.main}`,
                         }}
                       >
-                        <Info sx={{ color: '#2196f3' }} />
+                        <Info sx={{ color: accentColor.main }} />
                         <Box>
                           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                             {rec.action}
@@ -285,11 +279,11 @@ const Compliance: React.FC = () => {
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
               <Card>
-                <CardContent>
-                  <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography color="text.secondary" variant="body2" sx={{ mb: 0.5, fontSize: '0.8rem' }}>
                     Compliance Score
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#4caf50' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: '#10b981' }}>
                     {complianceScore ? `${complianceScore}%` : '--'}
                   </Typography>
                 </CardContent>
@@ -297,11 +291,11 @@ const Compliance: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <Card>
-                <CardContent>
-                  <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography color="text.secondary" variant="body2" sx={{ mb: 0.5, fontSize: '0.8rem' }}>
                     Gaps Found
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#ff9800' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: '#f59e0b' }}>
                     {gaps.length}
                   </Typography>
                 </CardContent>
@@ -309,11 +303,11 @@ const Compliance: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <Card>
-                <CardContent>
-                  <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography color="text.secondary" variant="body2" sx={{ mb: 0.5, fontSize: '0.8rem' }}>
                     Risks Identified
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#f44336' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: '#ef4444' }}>
                     {risks.length}
                   </Typography>
                 </CardContent>
@@ -321,11 +315,11 @@ const Compliance: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <Card>
-                <CardContent>
-                  <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography color="text.secondary" variant="body2" sx={{ mb: 0.5, fontSize: '0.8rem' }}>
                     Recommendations
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#2196f3' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, color: accentColor.main }}>
                     {recommendations.length}
                   </Typography>
                 </CardContent>

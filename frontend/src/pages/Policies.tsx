@@ -50,7 +50,7 @@ const Policies: React.FC = () => {
   if (error) {
     return (
       <Alert severity="error" sx={{ m: 2 }}>
-        Failed to load policies. Is the backend running?
+        Failed to load policies. Please ensure the backend server is running.
       </Alert>
     );
   }
@@ -59,10 +59,10 @@ const Policies: React.FC = () => {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
             Policy Management
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Manage and track organizational policies
           </Typography>
         </Box>

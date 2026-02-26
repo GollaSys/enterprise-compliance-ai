@@ -23,6 +23,8 @@ import {
   ListItemText,
   Paper,
   Divider,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -54,6 +56,7 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { agentsAPI, documentsAPI } from '../services/api';
+import { useThemeContext } from '../contexts/ThemeContext';
 
 const AGENT_ICONS: Record<string, React.ReactNode> = {
   search: <Search />,
@@ -64,14 +67,14 @@ const AGENT_ICONS: Record<string, React.ReactNode> = {
 };
 
 const AGENT_COLORS: Record<string, string> = {
-  regulatory_analyst: '#1976d2',
-  policy_mapper: '#7b1fa2',
-  evidence_validator: '#388e3c',
-  risk_scorer: '#f57c00',
-  executive_reporter: '#c62828',
+  regulatory_analyst: '#3b82f6',
+  policy_mapper: '#8b5cf6',
+  evidence_validator: '#10b981',
+  risk_scorer: '#f59e0b',
+  executive_reporter: '#ef4444',
 };
 
-const BAR_COLORS = ['#1976d2', '#7b1fa2', '#388e3c', '#f57c00', '#c62828'];
+const BAR_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
 interface TimelineStep {
   order: number;
@@ -84,7 +87,6 @@ interface TimelineStep {
   output_snippet: string;
 }
 
-// --- Pipeline Node ---
 const PipelineNode = ({
   agent,
   isActive,
@@ -96,23 +98,16 @@ const PipelineNode = ({
   isCompleted: boolean;
   isIdle: boolean;
 }) => {
-  const color = AGENT_COLORS[agent.id] || '#1976d2';
+  const theme = useTheme();
+  const color = AGENT_COLORS[agent.id] || '#3b82f6';
   const icon = AGENT_ICONS[agent.icon] || <SmartToy />;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative',
-        minWidth: 140,
-      }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', minWidth: 140 }}>
       <Box
         sx={{
-          width: 80,
-          height: 80,
+          width: 76,
+          height: 76,
           borderRadius: 3,
           display: 'flex',
           alignItems: 'center',
@@ -120,28 +115,28 @@ const PipelineNode = ({
           border: isActive
             ? `3px solid ${color}`
             : isCompleted
-            ? '3px solid #4caf50'
-            : '2px solid #e0e0e0',
+            ? '3px solid #10b981'
+            : `2px solid ${theme.palette.divider}`,
           background: isActive
-            ? `linear-gradient(135deg, ${color}15 0%, ${color}30 100%)`
+            ? alpha(color, 0.08)
             : isCompleted
-            ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)'
-            : '#fafafa',
+            ? alpha('#10b981', 0.08)
+            : theme.palette.background.paper,
           transition: 'all 0.4s ease',
           animation: isActive ? 'agentPulse 1.5s infinite' : 'none',
           '@keyframes agentPulse': {
-            '0%': { boxShadow: `0 0 0 0 ${color}66` },
-            '70%': { boxShadow: `0 0 0 12px ${color}00` },
-            '100%': { boxShadow: `0 0 0 0 ${color}00` },
+            '0%': { boxShadow: `0 0 0 0 ${alpha(color, 0.4)}` },
+            '70%': { boxShadow: `0 0 0 12px ${alpha(color, 0)}` },
+            '100%': { boxShadow: `0 0 0 0 ${alpha(color, 0)}` },
           },
         }}
       >
         {isActive ? (
-          <CircularProgress size={28} sx={{ color: color }} />
+          <CircularProgress size={28} sx={{ color }} />
         ) : isCompleted ? (
-          <CheckCircle sx={{ fontSize: 32, color: '#4caf50' }} />
+          <CheckCircle sx={{ fontSize: 32, color: '#10b981' }} />
         ) : (
-          <Box sx={{ color: color, display: 'flex' }}>
+          <Box sx={{ color, display: 'flex' }}>
             {React.cloneElement(icon as React.ReactElement, { sx: { fontSize: 32 } })}
           </Box>
         )}
@@ -151,7 +146,7 @@ const PipelineNode = ({
         sx={{
           mt: 1,
           fontWeight: isActive ? 700 : 500,
-          color: isActive ? color : isCompleted ? '#4caf50' : 'text.secondary',
+          color: isActive ? color : isCompleted ? '#10b981' : 'text.secondary',
           textAlign: 'center',
           fontSize: '0.75rem',
           maxWidth: 120,
@@ -163,127 +158,69 @@ const PipelineNode = ({
         <Chip
           label="Processing..."
           size="small"
-          sx={{
-            mt: 0.5,
-            height: 20,
-            fontSize: '0.65rem',
-            bgcolor: `${color}20`,
-            color: color,
-            fontWeight: 600,
-          }}
+          sx={{ mt: 0.5, height: 20, fontSize: '0.65rem', bgcolor: alpha(color, 0.1), color, fontWeight: 600 }}
         />
       )}
       {isCompleted && (
         <Chip
           label="Done"
           size="small"
-          sx={{
-            mt: 0.5,
-            height: 20,
-            fontSize: '0.65rem',
-            bgcolor: '#e8f5e9',
-            color: '#388e3c',
-            fontWeight: 600,
-          }}
+          sx={{ mt: 0.5, height: 20, fontSize: '0.65rem', bgcolor: alpha('#10b981', 0.1), color: '#10b981', fontWeight: 600 }}
         />
       )}
     </Box>
   );
 };
 
-// --- Pipeline Arrow ---
-const PipelineArrow = ({ label, isActive }: { label: string; isActive: boolean }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      mx: { xs: 0, md: 0.5 },
-      my: { xs: 1, md: 0 },
-    }}
-  >
-    <Box
-      sx={{
-        display: { xs: 'none', md: 'flex' },
-        alignItems: 'center',
-        gap: 0,
-      }}
-    >
-      <Box
-        sx={{
-          width: 40,
-          height: 2,
-          bgcolor: isActive ? '#1976d2' : '#e0e0e0',
-          transition: 'background-color 0.4s ease',
-        }}
-      />
-      <ArrowForward
-        sx={{
-          fontSize: 18,
-          color: isActive ? '#1976d2' : '#bdbdbd',
-          transition: 'color 0.4s ease',
-        }}
-      />
+const PipelineArrow = ({ label, isActive }: { label: string; isActive: boolean }) => {
+  const theme = useTheme();
+  const { accentColor } = useThemeContext();
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mx: { xs: 0, md: 0.5 }, my: { xs: 1, md: 0 } }}>
+      <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0 }}>
+        <Box sx={{ width: 40, height: 2, bgcolor: isActive ? accentColor.main : theme.palette.divider, transition: 'background-color 0.4s ease' }} />
+        <ArrowForward sx={{ fontSize: 18, color: isActive ? accentColor.main : theme.palette.text.disabled, transition: 'color 0.4s ease' }} />
+      </Box>
+      <Typography
+        variant="caption"
+        sx={{ fontSize: '0.6rem', color: isActive ? 'primary.main' : 'text.disabled', textAlign: 'center', maxWidth: 80, mt: 0.5, lineHeight: 1.2, display: { xs: 'none', lg: 'block' } }}
+      >
+        {label}
+      </Typography>
     </Box>
-    <Typography
-      variant="caption"
-      sx={{
-        fontSize: '0.6rem',
-        color: isActive ? 'primary.main' : 'text.disabled',
-        textAlign: 'center',
-        maxWidth: 80,
-        mt: 0.5,
-        lineHeight: 1.2,
-        display: { xs: 'none', lg: 'block' },
-      }}
-    >
-      {label}
-    </Typography>
-  </Box>
-);
+  );
+};
 
-// --- Stat Card ---
-const MetricCard = ({
-  title,
-  value,
-  icon,
-  color,
-}: {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  color: string;
-}) => (
+const MetricCard = ({ title, value, icon, color }: { title: string; value: string | number; icon: React.ReactNode; color: string }) => (
   <Card sx={{ height: '100%' }}>
-    <CardContent>
+    <CardContent sx={{ p: 2.5 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
-          <Typography color="text.secondary" variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+          <Typography color="text.secondary" variant="body2" sx={{ mb: 0.5, fontWeight: 500, fontSize: '0.8rem' }}>
             {title}
           </Typography>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>
             {value}
           </Typography>
         </Box>
         <Box
           sx={{
-            width: 48,
-            height: 48,
-            borderRadius: 2,
-            background: `linear-gradient(135deg, ${color}20 0%, ${color}40 100%)`,
+            width: 44,
+            height: 44,
+            borderRadius: 2.5,
+            background: alpha(color, 0.1),
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          {React.cloneElement(icon as React.ReactElement, { sx: { color, fontSize: 24 } })}
+          {React.cloneElement(icon as React.ReactElement, { sx: { color, fontSize: 22 } })}
         </Box>
       </Box>
     </CardContent>
   </Card>
 );
 
-// --- Main Agents Page ---
 const Agents: React.FC = () => {
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [selectedRegulation, setSelectedRegulation] = useState('GDPR');
@@ -295,6 +232,9 @@ const Agents: React.FC = () => {
   const [totalDuration, setTotalDuration] = useState(0);
   const logEndRef = useRef<HTMLDivElement>(null);
   const { enqueueSnackbar } = useSnackbar();
+  const theme = useTheme();
+  const { accentColor, mode } = useThemeContext();
+  const isLight = mode === 'light';
 
   const { data: detailsData, isLoading: detailsLoading } = useQuery({
     queryKey: ['agents-details'],
@@ -392,22 +332,23 @@ const Agents: React.FC = () => {
   }
 
   const demoFinished = currentStep >= demoTimeline.length && demoTimeline.length > 0;
+  const chartStroke = isLight ? '#e2e8f0' : '#334155';
+  const chartText = isLight ? '#64748b' : '#94a3b8';
 
   return (
     <Box>
-      {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
           AI Agent Orchestration
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body2" color="text.secondary">
           Visualize how CrewAI agents collaborate in a sequential pipeline to automate compliance analysis
         </Typography>
       </Box>
 
-      {/* Section A: Pipeline Visualization */}
+      {/* Pipeline Visualization */}
       <Card sx={{ mb: 3 }}>
-        <CardContent sx={{ py: 4 }}>
+        <CardContent sx={{ py: 4, px: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -463,10 +404,10 @@ const Agents: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Section C: Live Orchestration Demo */}
+      {/* Live Demo */}
       <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
             Live Orchestration Demo
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -476,12 +417,7 @@ const Agents: React.FC = () => {
           <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
             <FormControl size="small" sx={{ minWidth: 160 }}>
               <InputLabel>Regulation</InputLabel>
-              <Select
-                value={selectedRegulation}
-                onChange={(e) => setSelectedRegulation(e.target.value)}
-                label="Regulation"
-                disabled={isRunning}
-              >
+              <Select value={selectedRegulation} onChange={(e) => setSelectedRegulation(e.target.value)} label="Regulation" disabled={isRunning}>
                 <MenuItem value="GDPR">GDPR</MenuItem>
                 <MenuItem value="SOX">SOX</MenuItem>
                 <MenuItem value="FINRA">FINRA</MenuItem>
@@ -490,21 +426,12 @@ const Agents: React.FC = () => {
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 260 }}>
               <InputLabel>Document</InputLabel>
-              <Select
-                value={selectedDocument}
-                onChange={(e) => setSelectedDocument(e.target.value)}
-                label="Document"
-                disabled={isRunning}
-              >
+              <Select value={selectedDocument} onChange={(e) => setSelectedDocument(e.target.value)} label="Document" disabled={isRunning}>
                 {uploadedDocs.length === 0 ? (
-                  <MenuItem disabled value="">
-                    No documents uploaded yet
-                  </MenuItem>
+                  <MenuItem disabled value="">No documents uploaded yet</MenuItem>
                 ) : (
                   uploadedDocs.map((doc: any) => (
-                    <MenuItem key={doc.id} value={doc.id}>
-                      {doc.filename}
-                    </MenuItem>
+                    <MenuItem key={doc.id} value={doc.id}>{doc.filename}</MenuItem>
                   ))
                 )}
               </Select>
@@ -514,12 +441,6 @@ const Agents: React.FC = () => {
               startIcon={isRunning ? <CircularProgress size={18} color="inherit" /> : <PlayArrow />}
               onClick={handleRunDemo}
               disabled={isRunning || runMutation.isPending || !selectedDocument}
-              sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4196 100%)',
-                },
-              }}
             >
               {isRunning ? 'Running Pipeline...' : 'Run Demo'}
             </Button>
@@ -545,31 +466,30 @@ const Agents: React.FC = () => {
                 variant="determinate"
                 value={((currentStep + 1) / 5) * 100}
                 sx={{
-                  height: 8,
-                  borderRadius: 4,
+                  height: 6,
+                  borderRadius: 3,
                   '& .MuiLinearProgress-bar': {
-                    background: 'linear-gradient(90deg, #667eea, #764ba2)',
-                    borderRadius: 4,
+                    background: `linear-gradient(90deg, ${accentColor.main}, ${accentColor.dark})`,
+                    borderRadius: 3,
                   },
                 }}
               />
             </Box>
           )}
 
-          {/* Activity Log */}
           {(completedSteps.length > 0 || isRunning) && (
             <Paper
               variant="outlined"
               sx={{
                 maxHeight: 320,
                 overflow: 'auto',
-                bgcolor: '#fafafa',
+                bgcolor: isLight ? '#f8fafc' : '#0f172a',
                 p: 0,
               }}
             >
               <List dense sx={{ py: 0 }}>
                 {completedSteps.map((step, idx) => {
-                  const color = AGENT_COLORS[step.agent_id] || '#1976d2';
+                  const color = AGENT_COLORS[step.agent_id] || '#3b82f6';
                   const icon = AGENT_ICONS[
                     agents.find((a: any) => a.id === step.agent_id)?.icon || 'search'
                   ] || <SmartToy />;
@@ -586,10 +506,8 @@ const Agents: React.FC = () => {
                         }}
                       >
                         <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: color, width: 36, height: 36 }}>
-                            {React.cloneElement(icon as React.ReactElement, {
-                              sx: { fontSize: 18 },
-                            })}
+                          <Avatar sx={{ bgcolor: alpha(color, 0.15), color, width: 36, height: 36 }}>
+                            {React.cloneElement(icon as React.ReactElement, { sx: { fontSize: 18 } })}
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
@@ -601,21 +519,13 @@ const Agents: React.FC = () => {
                               <Chip
                                 label={`${step.duration}s`}
                                 size="small"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.65rem',
-                                  bgcolor: `${color}15`,
-                                  color: color,
-                                }}
+                                sx={{ height: 20, fontSize: '0.65rem', bgcolor: alpha(color, 0.1), color }}
                               />
-                              <CheckCircle sx={{ fontSize: 16, color: '#4caf50' }} />
+                              <CheckCircle sx={{ fontSize: 16, color: '#10b981' }} />
                             </Box>
                           }
                           secondary={
-                            <Typography
-                              variant="body2"
-                              sx={{ color: 'text.secondary', fontSize: '0.8rem', lineHeight: 1.5 }}
-                            >
+                            <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem', lineHeight: 1.5 }}>
                               {step.output_snippet}
                             </Typography>
                           }
@@ -630,13 +540,13 @@ const Agents: React.FC = () => {
                     <ListItemAvatar>
                       <Avatar
                         sx={{
-                          bgcolor:
-                            AGENT_COLORS[demoTimeline[currentStep]?.agent_id] || '#1976d2',
+                          bgcolor: alpha(AGENT_COLORS[demoTimeline[currentStep]?.agent_id] || '#3b82f6', 0.15),
+                          color: AGENT_COLORS[demoTimeline[currentStep]?.agent_id] || '#3b82f6',
                           width: 36,
                           height: 36,
                         }}
                       >
-                        <CircularProgress size={18} sx={{ color: 'white' }} />
+                        <CircularProgress size={18} sx={{ color: 'inherit' }} />
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
@@ -655,13 +565,13 @@ const Agents: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Section B: Agent Detail Cards */}
+      {/* Agent Detail Cards */}
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
         Agent Details
       </Typography>
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {agents.map((agent: any) => {
-          const color = AGENT_COLORS[agent.id] || '#1976d2';
+          const color = AGENT_COLORS[agent.id] || '#3b82f6';
           const icon = AGENT_ICONS[agent.icon] || <SmartToy />;
           const isExpanded = expandedAgent === agent.id;
           return (
@@ -673,20 +583,12 @@ const Agents: React.FC = () => {
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
                   },
                 }}
               >
-                <CardContent>
+                <CardContent sx={{ p: 2.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Avatar
-                      sx={{
-                        bgcolor: `${color}20`,
-                        color: color,
-                        width: 44,
-                        height: 44,
-                      }}
-                    >
+                    <Avatar sx={{ bgcolor: alpha(color, 0.1), color, width: 44, height: 44 }}>
                       {icon}
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
@@ -701,8 +603,8 @@ const Agents: React.FC = () => {
                       label={agent.status}
                       size="small"
                       sx={{
-                        bgcolor: agent.status === 'active' ? '#e8f5e9' : '#fff3e0',
-                        color: agent.status === 'active' ? '#388e3c' : '#f57c00',
+                        bgcolor: agent.status === 'active' ? alpha('#10b981', 0.1) : alpha('#f59e0b', 0.1),
+                        color: agent.status === 'active' ? '#10b981' : '#f59e0b',
                         fontWeight: 600,
                         fontSize: '0.7rem',
                       }}
@@ -720,12 +622,7 @@ const Agents: React.FC = () => {
                         label={tool.name.replace(/_/g, ' ')}
                         size="small"
                         variant="outlined"
-                        sx={{
-                          fontSize: '0.65rem',
-                          height: 24,
-                          borderColor: `${color}40`,
-                          color: color,
-                        }}
+                        sx={{ fontSize: '0.65rem', height: 24, borderColor: alpha(color, 0.3), color }}
                       />
                     ))}
                   </Box>
@@ -735,49 +632,28 @@ const Agents: React.FC = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', gap: 3 }}>
                       <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Tasks
-                        </Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                          {agent.tasks_completed}
-                        </Typography>
+                        <Typography variant="caption" color="text.secondary">Tasks</Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{agent.tasks_completed}</Typography>
                       </Box>
                       <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Avg Time
-                        </Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                          {agent.avg_execution_time}s
-                        </Typography>
+                        <Typography variant="caption" color="text.secondary">Avg Time</Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{agent.avg_execution_time}s</Typography>
                       </Box>
                     </Box>
-                    <IconButton
-                      size="small"
-                      onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
-                    >
+                    <IconButton size="small" onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}>
                       {isExpanded ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
                   </Box>
 
                   <Collapse in={isExpanded}>
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block' }}>
-                        Backstory
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', mb: 2 }}>
-                        {agent.backstory}
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block' }}>
-                        Tool Details
-                      </Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block' }}>Backstory</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', mb: 2 }}>{agent.backstory}</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, display: 'block' }}>Tool Details</Typography>
                       {agent.tools.map((tool: any) => (
                         <Box key={tool.name} sx={{ mb: 1 }}>
-                          <Typography variant="caption" sx={{ fontWeight: 600, color }}>
-                            {tool.name.replace(/_/g, ' ')}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                            {tool.description}
-                          </Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 600, color }}>{tool.name.replace(/_/g, ' ')}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{tool.description}</Typography>
                         </Box>
                       ))}
                     </Box>
@@ -789,58 +665,42 @@ const Agents: React.FC = () => {
         })}
       </Grid>
 
-      {/* Section D: Agent Metrics */}
+      {/* Performance Metrics */}
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
         Performance Metrics
       </Typography>
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Total Tasks"
-            value={metrics?.total_tasks || 0}
-            icon={<TaskAlt />}
-            color="#1976d2"
-          />
+          <MetricCard title="Total Tasks" value={metrics?.total_tasks || 0} icon={<TaskAlt />} color="#3b82f6" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Success Rate"
-            value={`${((metrics?.success_rate || 0) * 100).toFixed(0)}%`}
-            icon={<Speed />}
-            color="#388e3c"
-          />
+          <MetricCard title="Success Rate" value={`${((metrics?.success_rate || 0) * 100).toFixed(0)}%`} icon={<Speed />} color="#10b981" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Avg Execution"
-            value={`${metrics?.average_execution_time || 0}s`}
-            icon={<Timer />}
-            color="#f57c00"
-          />
+          <MetricCard title="Avg Execution" value={`${metrics?.average_execution_time || 0}s`} icon={<Timer />} color="#f59e0b" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Active Agents"
-            value="5/5"
-            icon={<Group />}
-            color="#7b1fa2"
-          />
+          <MetricCard title="Active Agents" value="5/5" icon={<Group />} color="#8b5cf6" />
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                Tasks by Agent
-              </Typography>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>Tasks by Agent</Typography>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" stroke="#666" fontSize={12} />
-                  <YAxis stroke="#666" fontSize={12} />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartStroke} />
+                  <XAxis dataKey="name" stroke={chartText} fontSize={12} />
+                  <YAxis stroke={chartText} fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 12,
+                    }}
+                  />
                   <Bar dataKey="tasks" radius={[6, 6, 0, 0]}>
                     {chartData.map((_: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={BAR_COLORS[index % BAR_COLORS.length]} />
@@ -853,16 +713,20 @@ const Agents: React.FC = () => {
         </Grid>
         <Grid item xs={12} md={6}>
           <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                Average Execution Time (seconds)
-              </Typography>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>Average Execution Time (seconds)</Typography>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" stroke="#666" fontSize={12} />
-                  <YAxis stroke="#666" fontSize={12} />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartStroke} />
+                  <XAxis dataKey="name" stroke={chartText} fontSize={12} />
+                  <YAxis stroke={chartText} fontSize={12} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 12,
+                    }}
+                  />
                   <Bar dataKey="avgTime" radius={[6, 6, 0, 0]}>
                     {chartData.map((_: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={BAR_COLORS[index % BAR_COLORS.length]} />
