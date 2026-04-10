@@ -267,6 +267,59 @@ class TestPolicyMapperNode:
         assert task.recipient_agent == "evidence_validator"
 
 
+# ── Task 7: Workflow ──────────────────────────────────────────────────────
+
+class TestComplianceWorkflow:
+    def test_workflow_compiles(self):
+        """StateGraph compiles without error."""
+        from src.demo.graph.workflow import build_workflow
+        app = build_workflow()
+        assert app is not None
+
+    def test_workflow_has_all_nodes(self):
+        from src.demo.graph.workflow import build_workflow
+        app = build_workflow()
+        graph_repr = str(app.get_graph())
+        for node in ["regulatory_analyst", "policy_mapper", "evidence_validator", "risk_scorer", "executive_reporter"]:
+            assert node in graph_repr
+
+    def test_workflow_runs_end_to_end_with_mocks(self, base_state, monkeypatch, tmp_path):
+        """Full pipeline runs with mocked LLM responses."""
+        fake_response_ra = '{"requirements": ["Art.5 - data minimisation", "Art.17 - right to erasure"]}'
+        fake_response_pm = '{"gaps": ["Art.17 - no erasure procedure"], "covered": ["Art.5"]}'
+        fake_response_ev = '{"validated_gaps": [{"gap": "Art.17", "severity": "critical", "repeat_finding": false, "notes": ""}]}'
+        fake_response_rs = '{"risks": [{"gap": "Art.17", "risk_score": 8.2, "impact": 9, "likelihood": 8, "control_effectiveness": 2, "priority": "critical"}]}'
+        fake_response_er = "COMPLIANCE SUMMARY: One critical gap identified requiring immediate attention."
+
+        responses_iter = iter([fake_response_ra, fake_response_pm, fake_response_ev, fake_response_rs, fake_response_er])
+
+        from langchain_core.messages import AIMessage
+
+        class FakeLLM:
+            def invoke(self, *args, **kwargs):
+                return AIMessage(content=next(responses_iter, "mock response"))
+
+        fake_llm = FakeLLM()
+        monkeypatch.setattr("src.demo.agents.regulatory_analyst._get_llm", lambda: fake_llm)
+        monkeypatch.setattr("src.demo.agents.policy_mapper._get_llm", lambda: fake_llm)
+        monkeypatch.setattr("src.demo.agents.evidence_validator._get_llm", lambda: fake_llm)
+        monkeypatch.setattr("src.demo.agents.risk_scorer._get_llm", lambda: fake_llm)
+        monkeypatch.setattr("src.demo.agents.executive_reporter._get_llm", lambda: fake_llm)
+
+        from src.demo.graph.workflow import run_compliance_pipeline
+        result = run_compliance_pipeline(base_state)
+
+        assert "a2a_tasks" in result
+        # All 5 agents should have appended tasks
+        assert len(result["a2a_tasks"]) == 5
+        agents = [t.sender_agent for t in result["a2a_tasks"]]
+        assert "regulatory_analyst" in agents
+        assert "executive_reporter" in agents
+
+        # SSE events should have been emitted
+        assert len(result.get("sse_events", [])) >= 5
+
+
 class TestRiskScorerNode:
     def test_calls_mem0_add(self, base_state, monkeypatch, tmp_path):
         from src.demo.agents.risk_scorer import risk_scorer_node
