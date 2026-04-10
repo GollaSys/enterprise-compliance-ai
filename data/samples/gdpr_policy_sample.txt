@@ -1,0 +1,149 @@
+ACME CORPORATION — DATA PROTECTION POLICY
+Version 2.1 | Last Updated: January 2026
+Classification: Internal
+
+─────────────────────────────────────────
+1. PURPOSE AND SCOPE
+─────────────────────────────────────────
+This policy sets out how Acme Corporation ("the Company") collects, uses, stores, and
+protects personal data in compliance with the General Data Protection Regulation (EU)
+2016/679 ("GDPR") and applicable national data protection legislation.
+
+This policy applies to all employees, contractors, and third-party processors who handle
+personal data on behalf of the Company.
+
+─────────────────────────────────────────
+2. DATA PROTECTION PRINCIPLES (Art. 5)
+─────────────────────────────────────────
+The Company processes personal data in accordance with the following principles:
+
+2.1 Lawfulness, Fairness and Transparency
+Personal data is processed lawfully. Data subjects are informed of processing activities
+via privacy notices published on the Company website and provided at point of collection.
+
+2.2 Purpose Limitation
+Personal data is collected for specified, explicit and legitimate purposes. We collect
+employee data for HR administration, payroll, and performance management. Customer data
+is collected for contract fulfilment and account management.
+
+2.3 Data Minimisation
+We collect only the data necessary for the stated purpose. Data collection forms are
+reviewed annually to remove unnecessary fields.
+
+2.4 Accuracy
+We maintain procedures to ensure data accuracy. Employees may request corrections to
+their HR records through the HR portal.
+
+2.5 Storage Limitation
+Customer account data is retained for the duration of the contract plus 3 years for
+legal purposes. Employee payroll records are retained for 7 years per statutory
+requirements. Marketing contact lists are reviewed annually.
+
+NOTE: The Company does not currently maintain a formal data retention schedule mapping
+each data category to a defined retention period. This represents a gap in our Art. 5(1)(e)
+compliance posture.
+
+2.6 Integrity and Confidentiality
+Personal data is protected by appropriate technical and organisational measures including
+encryption at rest (AES-256) and in transit (TLS 1.3), access controls, and regular
+security assessments.
+
+─────────────────────────────────────────
+3. LAWFUL BASIS FOR PROCESSING (Art. 6)
+─────────────────────────────────────────
+The Company relies on the following lawful bases:
+
+- Contract performance: processing employee and customer data necessary to fulfil
+  contractual obligations
+- Legal obligation: payroll, tax, and statutory reporting requirements
+- Legitimate interests: fraud prevention, network security, business analytics
+- Consent: marketing communications (opt-in required, withdrawal mechanism provided)
+
+─────────────────────────────────────────
+4. DATA SUBJECT RIGHTS
+─────────────────────────────────────────
+4.1 Right of Access (Art. 15)
+Data subjects may submit Subject Access Requests (SARs) via email to dpo@acme.com.
+Requests are acknowledged within 3 business days and fulfilled within 30 days.
+The DPO maintains a SAR log tracking all requests and responses.
+
+4.2 Right to Rectification (Art. 16)
+Data subjects may request correction of inaccurate data. Correction requests are
+processed within 10 business days.
+
+4.3 Right to Erasure (Art. 17)
+The Company recognises data subjects' right to request deletion of their personal data.
+Requests should be submitted to dpo@acme.com.
+
+*** COMPLIANCE GAP: The Company does not currently have a documented procedure for
+handling Art. 17 erasure requests, including: verification steps, propagation to
+downstream processors, timelines for completion, or logging of erasure actions.
+This must be remediated as a priority. ***
+
+4.4 Right to Data Portability (Art. 20)
+Customer data export is available in CSV format via the customer portal. Employee data
+portability requests are handled by HR on a case-by-case basis.
+
+─────────────────────────────────────────
+5. RECORDS OF PROCESSING ACTIVITIES (Art. 30)
+─────────────────────────────────────────
+The Company maintains a Register of Processing Activities (ROPA) managed by the DPO.
+The register includes:
+- Controller and DPO contact details ✓
+- Purposes of processing ✓
+- Categories of data subjects ✓
+- Categories of personal data ✓
+- Transfer to third countries ✓
+
+*** COMPLIANCE GAP: The following required ROPA fields are currently INCOMPLETE:
+- Envisaged time limits for erasure of each data category (Art. 30(1)(f)) — NOT DOCUMENTED
+- General description of technical and organisational security measures (Art. 30(1)(g)) — PARTIALLY DOCUMENTED
+The ROPA was last audited 18 months ago and requires immediate review. ***
+
+─────────────────────────────────────────
+6. DATA SECURITY (Art. 32)
+─────────────────────────────────────────
+6.1 Technical Measures
+- Encryption at rest: AES-256 for all databases containing personal data
+- Encryption in transit: TLS 1.3 enforced for all API endpoints
+- Access controls: Role-based access control (RBAC) with principle of least privilege
+- Multi-factor authentication: Required for all staff accessing personal data systems
+- Vulnerability scanning: Monthly automated scans plus annual penetration test
+
+6.2 Organisational Measures
+- Staff training: Annual GDPR awareness training (completion rate: 94% last cycle)
+- Background checks: Conducted for all staff with access to sensitive personal data
+- Supplier due diligence: Data processing agreements in place with all major processors
+
+─────────────────────────────────────────
+7. DATA BREACH NOTIFICATION (Art. 33/34)
+─────────────────────────────────────────
+The Company maintains an Incident Response Plan covering personal data breaches.
+Suspected breaches must be reported to the DPO within 24 hours of discovery.
+The DPO will assess whether notification to the supervisory authority is required
+within the 72-hour window per Art. 33.
+
+─────────────────────────────────────────
+8. DATA PROTECTION OFFICER (Art. 37)
+─────────────────────────────────────────
+The Company has appointed a Data Protection Officer:
+Name: Sarah Chen
+Email: dpo@acme.com
+The DPO reports directly to the Board and has sufficient resources and independence
+to carry out their functions effectively.
+
+─────────────────────────────────────────
+9. INTERNATIONAL TRANSFERS
+─────────────────────────────────────────
+Data transfers to third countries are made under Standard Contractual Clauses (SCCs)
+approved by the European Commission. A transfer impact assessment (TIA) is conducted
+for each new transfer to countries without an adequacy decision.
+
+─────────────────────────────────────────
+10. POLICY REVIEW
+─────────────────────────────────────────
+This policy is reviewed annually by the DPO and Legal team. The next review is
+scheduled for Q1 2027. Questions should be directed to dpo@acme.com.
+
+Approved by: Chief Executive Officer
+Date: 15 January 2026
