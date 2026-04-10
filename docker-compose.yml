@@ -80,6 +80,44 @@ services:
       retries: 3
       start_period: 40s
 
+  # Langfuse observability database (separate from compliance-postgres)
+  langfuse-db:
+    image: postgres:15-alpine
+    container_name: langfuse-db
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse
+      POSTGRES_DB: langfuse
+    ports:
+      - "5433:5432"
+    volumes:
+      - langfuse_db_data:/var/lib/postgresql/data
+    networks:
+      - compliance-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Langfuse self-hosted observability (port 3001)
+  langfuse:
+    image: langfuse/langfuse:2
+    container_name: langfuse
+    ports:
+      - "3001:3000"
+    environment:
+      - DATABASE_URL=postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+      - NEXTAUTH_SECRET=changeme-in-prod
+      - SALT=changeme-in-prod
+      - NEXTAUTH_URL=http://localhost:3001
+      - TELEMETRY_ENABLED=false
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    networks:
+      - compliance-network
+
   # React Frontend
   frontend:
     build:
@@ -103,3 +141,4 @@ volumes:
   postgres_data:
   redis_data:
   chroma_data:
+  langfuse_db_data:
