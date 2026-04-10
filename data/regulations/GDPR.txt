@@ -1,0 +1,66 @@
+GDPR - General Data Protection Regulation (EU) 2016/679
+Key Articles for Compliance Assessment:
+
+Art. 5 - Principles relating to processing of personal data
+  Personal data shall be: processed lawfully, fairly and in a transparent manner (lawfulness, fairness, transparency);
+  collected for specified, explicit and legitimate purposes (purpose limitation);
+  adequate, relevant and limited to what is necessary (data minimisation);
+  accurate and kept up to date (accuracy);
+  kept in a form which permits identification of data subjects for no longer than necessary (storage limitation);
+  processed in a manner that ensures appropriate security (integrity and confidentiality).
+
+Art. 6 - Lawfulness of processing
+  Processing shall be lawful only if one of the legal bases applies: consent, contract, legal obligation,
+  vital interests, public task, or legitimate interests.
+
+Art. 12-14 - Transparency and information obligations
+  Controllers must provide clear, concise information about data processing to data subjects.
+
+Art. 15 - Right of access
+  Data subjects have the right to obtain confirmation of whether personal data is being processed,
+  access to personal data, and supplementary information about the processing.
+
+Art. 16 - Right to rectification
+  Data subjects have the right to obtain rectification of inaccurate personal data.
+
+Art. 17 - Right to erasure ('right to be forgotten')
+  Data subjects have the right to obtain erasure of personal data without undue delay where:
+  - data is no longer necessary for the purposes it was collected;
+  - consent is withdrawn and no other legal basis exists;
+  - data has been unlawfully processed;
+  - erasure required for compliance with a legal obligation.
+  Controllers must implement a procedure to handle erasure requests within 30 days.
+
+Art. 20 - Right to data portability
+  Data subjects have the right to receive personal data in a structured, commonly used, machine-readable format.
+
+Art. 25 - Data protection by design and by default
+  Controllers shall implement technical and organisational measures to implement data-protection principles effectively.
+
+Art. 28 - Processor obligations
+  Where processing is to be carried out on behalf of a controller, the processor shall provide sufficient guarantees.
+
+Art. 30 - Records of processing activities
+  Each controller shall maintain a record of processing activities containing:
+  - name and contact details of the controller;
+  - purposes of processing;
+  - description of categories of data subjects and categories of personal data;
+  - categories of recipients;
+  - transfers to third countries;
+  - envisaged time limits for erasure;
+  - general description of technical and organisational security measures.
+
+Art. 32 - Security of processing
+  Controllers and processors shall implement appropriate technical and organisational measures to ensure
+  a level of security appropriate to the risk, including encryption, pseudonymisation, and resilience.
+
+Art. 33 - Notification of personal data breach
+  In the event of a personal data breach, the controller shall notify the supervisory authority without
+  undue delay, and where feasible not later than 72 hours.
+
+Art. 35 - Data protection impact assessment (DPIA)
+  Where a type of processing is likely to result in a high risk, the controller shall carry out a DPIA.
+
+Art. 37 - Designation of the data protection officer (DPO)
+  Controllers and processors shall designate a DPO where processing is carried out by a public authority,
+  or where processing requires regular and systematic monitoring of data subjects on a large scale.

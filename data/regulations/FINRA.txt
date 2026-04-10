@@ -1,0 +1,33 @@
+FINRA - Financial Industry Regulatory Authority Rules
+Key Rules for Compliance Assessment:
+
+Rule 3110 - Supervision
+  Each member shall establish and maintain a system to supervise the activities of each associated person
+  that is reasonably designed to achieve compliance with applicable securities laws and regulations.
+  Written supervisory procedures (WSPs) must be maintained and updated.
+
+Rule 4511 - Books and records
+  Members shall make and preserve books, accounts, records, memoranda, and correspondence in conformity with
+  all applicable laws, rules, regulations and statements of policy promulgated thereunder.
+  Records must be maintained for a minimum of 6 years (3 years easily accessible).
+
+Rule 4512 - Customer account information
+  Members shall maintain certain account information for each customer including: name, tax identification,
+  address, telephone, date of birth, employment status, annual income, net worth, and investment objectives.
+
+Rule 4370 - Business continuity plans
+  Each member must create and maintain a written business continuity plan (BCP) identifying procedures
+  to be followed in the event of an emergency or significant business disruption.
+  BCP must be reviewed annually and updated as necessary.
+
+Rule 2010 - Standards of commercial honour and principles of trade
+  Members shall observe high standards of commercial honour and just and equitable principles of trade.
+
+Rule 2111 - Suitability
+  Members must have a reasonable basis to believe that a recommended transaction or investment strategy
+  involving a security is suitable for the customer based on information obtained through due diligence.
+
+Rule 3310 - Anti-Money Laundering compliance program
+  Each member shall develop and implement a written anti-money laundering program reasonably designed to
+  achieve and monitor the member's compliance with the Bank Secrecy Act.
+  Programs must include: customer identification, suspicious activity monitoring, recordkeeping, and training.

@@ -1,0 +1,30 @@
+SOX - Sarbanes-Oxley Act of 2002
+Key Sections for Compliance Assessment:
+
+Section 302 - Corporate responsibility for financial reports
+  Principal executive and financial officers must certify that quarterly and annual reports do not contain
+  untrue statements, fairly present the financial condition and results of operations, and that they are
+  responsible for establishing and maintaining disclosure controls and procedures.
+
+Section 404 - Management assessment of internal controls
+  Annual reports must contain an internal control report that:
+  - States the responsibility of management for establishing and maintaining adequate internal controls;
+  - Identifies the framework used to evaluate effectiveness;
+  - Contains management's assessment of the effectiveness of internal controls over financial reporting;
+  - The registered public accounting firm must attest to and report on management's assessment.
+
+Section 409 - Real time disclosure
+  Companies must disclose to the public on a rapid and current basis material changes in financial condition
+  or operations. Disclosures shall be presented in terms that are easy to understand.
+
+Section 802 - Criminal penalties for altering documents
+  Whoever knowingly alters, destroys, mutilates, conceals, covers up, falsifies, or makes a false entry in
+  any record, document, or tangible object with the intent to impede, obstruct, or influence the investigation
+  shall be fined or imprisoned.
+
+IT Controls under SOX:
+  - Access controls: restrict access to financial systems to authorised personnel;
+  - Change management: document and approve all changes to financial systems;
+  - Data backup and recovery: maintain backups with tested recovery procedures;
+  - Audit trails: log all access to and changes in financial data with timestamps;
+  - Segregation of duties: no single person should have end-to-end control of a financial process.

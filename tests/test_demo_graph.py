@@ -132,3 +132,36 @@ class TestMem0Client:
         client._memory = None
         ok = client.add("anything", user_id="demo")
         assert ok is False
+
+
+# ── Task 4: MCP Client ─────────────────────────────────────────────────────
+
+class TestMCPClient:
+    def test_read_file_falls_back_to_disk(self, tmp_path):
+        """When MCP subprocess unavailable, reads file directly from disk."""
+        from src.demo.mcp.client import MCPClient
+        test_file = tmp_path / "policy.txt"
+        test_file.write_text("sample policy content")
+        client = MCPClient()
+        result = client.read_file(str(test_file))
+        assert "sample policy content" in result
+
+    def test_read_file_returns_error_string_for_missing_file(self, tmp_path):
+        from src.demo.mcp.client import MCPClient
+        client = MCPClient()
+        result = client.read_file(str(tmp_path / "nonexistent.txt"))
+        assert "error" in result.lower() or result == ""
+
+    def test_get_regulation_text_gdpr(self):
+        """Falls back to bundled GDPR.txt when GitHub MCP unavailable."""
+        from src.demo.mcp.client import MCPClient
+        client = MCPClient()
+        text = client.get_regulation_text("GDPR")
+        assert len(text) > 100
+        assert "GDPR" in text or "General Data Protection" in text or "data" in text.lower()
+
+    def test_get_regulation_text_unknown_returns_empty(self):
+        from src.demo.mcp.client import MCPClient
+        client = MCPClient()
+        text = client.get_regulation_text("UNKNOWN_REG_XYZ")
+        assert isinstance(text, str)
