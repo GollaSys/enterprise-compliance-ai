@@ -13,7 +13,7 @@ load_dotenv()
 app = FastAPI(
     title="Enterprise Compliance AI Platform",
     description="AI-powered compliance platform",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -991,6 +991,17 @@ async def get_report(report_id: str):
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     return report
+
+
+# Mount demo v2 router (side-by-side with existing v1 — never touches v1 code)
+try:
+    from src.demo.router import router as demo_router
+    app.include_router(demo_router)
+except Exception as _demo_import_err:
+    import logging
+    logging.getLogger(__name__).warning(
+        "Demo router not loaded (missing deps?): %s", _demo_import_err
+    )
 
 
 if __name__ == "__main__":
