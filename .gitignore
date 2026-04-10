@@ -82,4 +82,5 @@ grafana_data/
 
 # Temporary files
 *.tmp
-.temp/
+.temp/data/mem0/
+data/checkpoints.db
