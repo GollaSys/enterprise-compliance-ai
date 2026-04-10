@@ -14,6 +14,7 @@ import Risks from './pages/Risks';
 import Reports from './pages/Reports';
 import Agents from './pages/Agents';
 import Settings from './pages/Settings';
+import AgentDemo from './pages/AgentDemo';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +49,7 @@ function App() {
                   <Route path="/risks" element={<Risks />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/agents" element={<Agents />} />
+                  <Route path="/demo" element={<AgentDemo />} />
                   <Route path="/settings" element={<Settings />} />
                 </Routes>
               </Layout>

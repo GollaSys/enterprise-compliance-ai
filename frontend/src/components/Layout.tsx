@@ -30,6 +30,7 @@ import {
   Assessment as ComplianceIcon,
   BarChart as ReportsIcon,
   SmartToy as AgentsIcon,
+  AccountTree as DemoIcon,
   Settings as SettingsIcon,
   Notifications as NotificationIcon,
   AccountCircle,
@@ -100,6 +101,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { text: 'Risks', icon: <RiskIcon />, path: '/risks', badge: openRisksCount > 0 ? String(openRisksCount) : null },
     { text: 'Reports', icon: <ReportsIcon />, path: '/reports', badge: null },
     { text: 'Agents', icon: <AgentsIcon />, path: '/agents', badge: null },
+    { text: 'Live Agent Demo', icon: <DemoIcon />, path: '/demo', badge: null },
   ];
 
   const sidebarBg = isLight ? '#ffffff' : '#0f172a';
