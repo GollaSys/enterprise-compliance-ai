@@ -84,8 +84,12 @@ Keep it board-level — no technical jargon."""
         pass
 
     langsmith_project = os.environ.get("LANGCHAIN_PROJECT", "enterprise-compliance-demo")
-    if os.environ.get("LANGCHAIN_TRACING_V2") == "true":
-        langsmith_url = f"https://smith.langchain.com/o/default/projects/{langsmith_project}"
+    if os.environ.get("LANGSMITH_TRACING") == "true" or os.environ.get("LANGCHAIN_TRACING_V2") == "true":
+        org_id = os.environ.get("LANGSMITH_ORG_ID", "")
+        if org_id:
+            langsmith_url = f"https://smith.langchain.com/o/{org_id}/projects/p/{langsmith_project}"
+        else:
+            langsmith_url = "https://smith.langchain.com"
 
     artifact = TaskArtifact(
         type="executive_report",

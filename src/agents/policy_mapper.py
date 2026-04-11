@@ -1,7 +1,6 @@
 from typing import Dict, List, Any, Optional
 from crewai import Task
-from langchain.tools import Tool
-from src.agents.base_agent import BaseComplianceAgent
+from src.agents.base_agent import BaseComplianceAgent, make_crewai_tool
 from src.services.rag_service import RAGService
 
 
@@ -10,21 +9,9 @@ class PolicyMapperAgent(BaseComplianceAgent):
         self.rag_service = rag_service
 
         tools = [
-            Tool(
-                name="map_policy_to_regulation",
-                func=self._map_policy,
-                description="Map internal policies to regulatory requirements"
-            ),
-            Tool(
-                name="identify_policy_gaps",
-                func=self._identify_gaps,
-                description="Identify gaps between policies and regulations"
-            ),
-            Tool(
-                name="generate_policy_recommendations",
-                func=self._generate_recommendations,
-                description="Generate policy improvement recommendations"
-            ),
+            make_crewai_tool("map_policy_to_regulation", "Map internal policies to regulatory requirements", self._map_policy),
+            make_crewai_tool("identify_policy_gaps", "Identify gaps between policies and regulations", self._identify_gaps),
+            make_crewai_tool("generate_policy_recommendations", "Generate policy improvement recommendations", self._generate_recommendations),
         ]
 
         super().__init__(

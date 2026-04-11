@@ -12,7 +12,6 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Divider,
   FormControl,
   Grid,
   InputLabel,
@@ -21,7 +20,6 @@ import {
   Select,
   Stack,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import {
@@ -32,7 +30,6 @@ import {
   Memory as MemoryIcon,
   OpenInNew as OpenInNewIcon,
   PlayArrow as PlayIcon,
-  Refresh as RefreshIcon,
   Stop as StopIcon,
   Sync as RunningIcon,
 } from '@mui/icons-material';

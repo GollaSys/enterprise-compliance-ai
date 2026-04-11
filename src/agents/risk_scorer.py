@@ -1,8 +1,7 @@
 from typing import Dict, List, Any, Optional
 from enum import Enum
 from crewai import Task
-from langchain.tools import Tool
-from src.agents.base_agent import BaseComplianceAgent
+from src.agents.base_agent import BaseComplianceAgent, make_crewai_tool
 
 
 class RiskLevel(Enum):
@@ -16,31 +15,11 @@ class RiskLevel(Enum):
 class RiskScorerAgent(BaseComplianceAgent):
     def __init__(self):
         tools = [
-            Tool(
-                name="calculate_risk_score",
-                func=self._calculate_risk_score,
-                description="Calculate risk scores for compliance gaps"
-            ),
-            Tool(
-                name="assess_impact",
-                func=self._assess_impact,
-                description="Assess business impact of compliance failures"
-            ),
-            Tool(
-                name="evaluate_likelihood",
-                func=self._evaluate_likelihood,
-                description="Evaluate likelihood of compliance breaches"
-            ),
-            Tool(
-                name="generate_risk_matrix",
-                func=self._generate_risk_matrix,
-                description="Generate risk assessment matrix"
-            ),
-            Tool(
-                name="prioritize_remediation",
-                func=self._prioritize_remediation,
-                description="Prioritize remediation efforts based on risk"
-            ),
+            make_crewai_tool("calculate_risk_score", "Calculate risk scores for compliance gaps", self._calculate_risk_score),
+            make_crewai_tool("assess_impact", "Assess business impact of compliance failures", self._assess_impact),
+            make_crewai_tool("evaluate_likelihood", "Evaluate likelihood of compliance breaches", self._evaluate_likelihood),
+            make_crewai_tool("generate_risk_matrix", "Generate risk assessment matrix", self._generate_risk_matrix),
+            make_crewai_tool("prioritize_remediation", "Prioritize remediation efforts based on risk", self._prioritize_remediation),
         ]
 
         super().__init__(

@@ -1,33 +1,16 @@
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from crewai import Task
-from langchain.tools import Tool
-from src.agents.base_agent import BaseComplianceAgent
+from src.agents.base_agent import BaseComplianceAgent, make_crewai_tool
 
 
 class EvidenceValidatorAgent(BaseComplianceAgent):
     def __init__(self):
         tools = [
-            Tool(
-                name="validate_evidence",
-                func=self._validate_evidence,
-                description="Validate operational evidence against compliance requirements"
-            ),
-            Tool(
-                name="assess_evidence_quality",
-                func=self._assess_quality,
-                description="Assess the quality and completeness of evidence"
-            ),
-            Tool(
-                name="check_evidence_timeliness",
-                func=self._check_timeliness,
-                description="Verify evidence is current and within acceptable timeframes"
-            ),
-            Tool(
-                name="verify_evidence_chain",
-                func=self._verify_chain,
-                description="Verify chain of custody and evidence integrity"
-            ),
+            make_crewai_tool("validate_evidence", "Validate operational evidence against compliance requirements", self._validate_evidence),
+            make_crewai_tool("assess_evidence_quality", "Assess the quality and completeness of evidence", self._assess_quality),
+            make_crewai_tool("check_evidence_timeliness", "Verify evidence is current and within acceptable timeframes", self._check_timeliness),
+            make_crewai_tool("verify_evidence_chain", "Verify chain of custody and evidence integrity", self._verify_chain),
         ]
 
         super().__init__(

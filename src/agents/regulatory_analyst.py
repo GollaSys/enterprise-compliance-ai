@@ -1,7 +1,6 @@
 from typing import Dict, List, Any
 from crewai import Task
-from langchain.tools import Tool
-from src.agents.base_agent import BaseComplianceAgent
+from src.agents.base_agent import BaseComplianceAgent, make_crewai_tool
 from src.services.document_service import DocumentService
 from src.services.rag_service import RAGService
 
@@ -12,21 +11,9 @@ class RegulatoryAnalystAgent(BaseComplianceAgent):
         self.rag_service = rag_service
 
         tools = [
-            Tool(
-                name="extract_regulatory_requirements",
-                func=self._extract_requirements,
-                description="Extract compliance requirements from regulatory documents"
-            ),
-            Tool(
-                name="search_regulations",
-                func=self._search_regulations,
-                description="Search for specific regulatory clauses and requirements"
-            ),
-            Tool(
-                name="analyze_regulatory_changes",
-                func=self._analyze_changes,
-                description="Analyze changes in regulatory requirements over time"
-            ),
+            make_crewai_tool("extract_regulatory_requirements", "Extract compliance requirements from regulatory documents", self._extract_requirements),
+            make_crewai_tool("search_regulations", "Search for specific regulatory clauses and requirements", self._search_regulations),
+            make_crewai_tool("analyze_regulatory_changes", "Analyze changes in regulatory requirements over time", self._analyze_changes),
         ]
 
         super().__init__(
@@ -71,10 +58,17 @@ class RegulatoryAnalystAgent(BaseComplianceAgent):
                 "citations": []
             }
 
+            # Map singular entity type names to plural dict keys
+            _type_key = {
+                "requirement": "requirements",
+                "obligation": "obligations",
+                "control": "controls",
+                "deadline": "deadlines",
+            }
             for req in requirements:
-                req_type = req.get("type", "requirement")
-                if req_type in structured_reqs:
-                    structured_reqs[req_type].append({
+                req_key = _type_key.get(req.get("type", "requirement"), req.get("type", ""))
+                if req_key in structured_reqs:
+                    structured_reqs[req_key].append({
                         "text": req.get("text"),
                         "section": req.get("section"),
                         "priority": req.get("priority", "medium"),

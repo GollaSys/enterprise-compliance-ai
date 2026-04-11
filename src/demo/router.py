@@ -208,6 +208,6 @@ def _load_long_term_memory(regulation_type: str) -> list:
         if results:
             logger.info("mem0 hit: %d prior %s findings loaded", len(results), regulation_type)
         return results
-    except Exception as exc:
+    except BaseException as exc:
         logger.warning("mem0 pre-load failed: %s", exc)
         return []

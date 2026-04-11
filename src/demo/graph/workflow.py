@@ -5,7 +5,8 @@ Builds a sequential StateGraph:
         → risk_scorer → executive_reporter → END
 
 Each node can route to error_handler on failure.
-SqliteSaver provides short-term checkpointing across the run.
+SqliteSaver provides short-term checkpointing for sync runs;
+AsyncSqliteSaver is used for the async SSE streaming path.
 """
 import logging
 import sqlite3
@@ -13,6 +14,7 @@ from typing import Any
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from src.demo.graph.state import ComplianceState
 
@@ -51,8 +53,8 @@ def _should_continue(state: dict) -> str:
     return "error_handler" if state.get("error") else "continue"
 
 
-def build_workflow() -> Any:
-    """Build and compile the compliance demo StateGraph."""
+def _build_graph() -> StateGraph:
+    """Build the uncompiled StateGraph (shared by sync and async paths)."""
     from src.demo.agents.regulatory_analyst import regulatory_analyst_node
     from src.demo.agents.policy_mapper import policy_mapper_node
     from src.demo.agents.evidence_validator import evidence_validator_node
@@ -94,6 +96,12 @@ def build_workflow() -> Any:
     graph.add_edge("executive_reporter", END)
     graph.add_edge("error_handler", END)
 
+    return graph
+
+
+def build_workflow() -> Any:
+    """Build and compile the compliance demo StateGraph (sync path)."""
+    graph = _build_graph()
     # Compile with SqliteSaver checkpointer
     try:
         conn = sqlite3.connect(_DB_PATH, check_same_thread=False)
@@ -117,16 +125,19 @@ def run_compliance_pipeline(initial_state: dict) -> dict:
 async def astream_compliance_pipeline(initial_state: dict):
     """Stream workflow events for SSE delivery.
 
+    Uses AsyncSqliteSaver so app.astream() can await checkpoint reads/writes.
     Yields dicts: {"node": str, "sse_events": list, "a2a_tasks": list}
     """
-    app = build_workflow()
+    graph = _build_graph()
     config = {"configurable": {"thread_id": initial_state.get("run_id", "default")}}
 
-    async for chunk in app.astream(initial_state, config=config):
-        # chunk is {node_name: state_update_dict}
-        for node_name, state_update in chunk.items():
-            yield {
-                "node": node_name,
-                "sse_events": state_update.get("sse_events", []),
-                "a2a_tasks": state_update.get("a2a_tasks", []),
-            }
+    async with AsyncSqliteSaver.from_conn_string(_DB_PATH) as checkpointer:
+        app = graph.compile(checkpointer=checkpointer)
+        async for chunk in app.astream(initial_state, config=config):
+            # chunk is {node_name: state_update_dict}
+            for node_name, state_update in chunk.items():
+                yield {
+                    "node": node_name,
+                    "sse_events": state_update.get("sse_events", []),
+                    "a2a_tasks": state_update.get("a2a_tasks", []),
+                }

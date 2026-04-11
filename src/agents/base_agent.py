@@ -1,11 +1,25 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import structlog
 from crewai import Agent, Task
-from langchain.tools import Tool
+from crewai.tools import BaseTool as CrewBaseTool
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = structlog.get_logger()
+
+
+def make_crewai_tool(tool_name: str, tool_description: str, func: Callable) -> CrewBaseTool:
+    """Wrap a plain callable into a CrewAI-compatible BaseTool instance."""
+    _func = func  # capture in closure
+
+    class _DynamicTool(CrewBaseTool):
+        name: str = tool_name
+        description: str = tool_description
+
+        def _run(self, *args: Any, **kwargs: Any) -> Any:
+            return _func(*args, **kwargs)
+
+    return _DynamicTool()
 
 
 class BaseComplianceAgent(ABC):
@@ -15,7 +29,7 @@ class BaseComplianceAgent(ABC):
         role: str,
         goal: str,
         backstory: str,
-        tools: Optional[List[Tool]] = None,
+        tools: Optional[List[CrewBaseTool]] = None,
         verbose: bool = True,
         max_iter: int = 10,
         memory: bool = True,
@@ -58,7 +72,7 @@ class BaseComplianceAgent(ABC):
             self.logger.error(f"Task execution failed", error=str(e))
             raise
 
-    def add_tool(self, tool: Tool) -> None:
+    def add_tool(self, tool: CrewBaseTool) -> None:
         self.tools.append(tool)
         self.agent.tools.append(tool)
 

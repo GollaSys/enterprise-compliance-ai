@@ -1,33 +1,16 @@
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 from crewai import Task
-from langchain.tools import Tool
-from src.agents.base_agent import BaseComplianceAgent
+from src.agents.base_agent import BaseComplianceAgent, make_crewai_tool
 
 
 class ExecutiveReporterAgent(BaseComplianceAgent):
     def __init__(self):
         tools = [
-            Tool(
-                name="generate_executive_summary",
-                func=self._generate_summary,
-                description="Generate executive-level compliance summary"
-            ),
-            Tool(
-                name="create_dashboard_metrics",
-                func=self._create_metrics,
-                description="Create dashboard metrics and KPIs"
-            ),
-            Tool(
-                name="prepare_board_presentation",
-                func=self._prepare_presentation,
-                description="Prepare board-ready compliance presentation"
-            ),
-            Tool(
-                name="generate_trend_analysis",
-                func=self._generate_trends,
-                description="Generate compliance trend analysis"
-            ),
+            make_crewai_tool("generate_executive_summary", "Generate executive-level compliance summary", self._generate_summary),
+            make_crewai_tool("create_dashboard_metrics", "Create dashboard metrics and KPIs", self._create_metrics),
+            make_crewai_tool("prepare_board_presentation", "Prepare board-ready compliance presentation", self._prepare_presentation),
+            make_crewai_tool("generate_trend_analysis", "Generate compliance trend analysis", self._generate_trends),
         ]
 
         super().__init__(
