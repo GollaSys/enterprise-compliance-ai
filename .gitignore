@@ -84,3 +84,4 @@ grafana_data/
 *.tmp
 .temp/data/mem0/
 data/checkpoints.db
+evals/results/
