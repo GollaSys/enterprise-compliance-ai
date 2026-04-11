@@ -49,7 +49,13 @@ THRESHOLDS: dict[str, float] = {
 
 
 def run_pipeline(inputs: dict) -> dict:
-    """Adapter: LangSmith example input → run_compliance_pipeline state output."""
+    """Adapter: LangSmith example input → run_compliance_pipeline state output.
+
+    Serializes Pydantic A2ATask objects to plain dicts so judges receive
+    JSON-compatible data (LangSmith passes run.outputs verbatim, no auto-serialization).
+    """
+    from pydantic import BaseModel
+
     doc_path = inputs.get("document_path", "")
 
     if "document_text" in inputs:
@@ -68,7 +74,19 @@ def run_pipeline(inputs: dict) -> dict:
         "short_term_memory": {},
         "error": None,
     }
-    return run_compliance_pipeline(state)
+    final_state = run_compliance_pipeline(state)
+
+    # Serialize Pydantic objects → plain dicts for judges
+    serialized = {}
+    for k, v in final_state.items():
+        if isinstance(v, list):
+            serialized[k] = [
+                item.model_dump(mode="json") if isinstance(item, BaseModel) else item
+                for item in v
+            ]
+        else:
+            serialized[k] = v
+    return serialized
 
 
 def main() -> int:
